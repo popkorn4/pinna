@@ -19,6 +19,17 @@ export async function POST(req: Request) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "auth" }, { status: 401 });
 
+  if (!process.env.ANTHROPIC_API_KEY) {
+    return NextResponse.json(
+      {
+        error: "no_key",
+        message:
+          "ANTHROPIC_API_KEY не задан. Добавь ключ в .env.local и перезапусти dev-сервер.",
+      },
+      { status: 503 },
+    );
+  }
+
   let body: z.infer<typeof bodySchema>;
   try {
     body = bodySchema.parse(await req.json());

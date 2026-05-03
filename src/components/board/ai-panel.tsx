@@ -58,17 +58,31 @@ export function AiPanel({ boardId }: Props) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
+  const [hasKey, setHasKey] = useState<boolean | null>(null);
+  const [modelLabel, setModelLabel] = useState<string>("Claude");
   const [, startTransition] = useTransition();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // При открытии — гарантируем conversationId
+  // Проверка наличия ключа при первом открытии
   useEffect(() => {
-    if (!open) return;
+    if (!open || hasKey !== null) return;
+    fetch("/api/ai/status")
+      .then((r) => r.json())
+      .then((d: { has_key: boolean; model: string }) => {
+        setHasKey(d.has_key);
+        setModelLabel(d.model);
+      })
+      .catch(() => setHasKey(false));
+  }, [open, hasKey]);
+
+  // При открытии — гарантируем conversationId (только если ключ есть)
+  useEffect(() => {
+    if (!open || !hasKey) return;
     if (conversationId) return;
     ensureConversation(boardId).then((r) => {
       if (r.ok) setConversationId(r.data.conversationId);
     });
-  }, [open, conversationId, boardId]);
+  }, [open, conversationId, boardId, hasKey]);
 
   // Догрузить историю при смене разговора
   useEffect(() => {
@@ -127,6 +141,9 @@ export function AiPanel({ boardId }: Props) {
           toast.error("Превышен лимит запросов. Попробуйте позже.");
         } else if (res.status === 401) {
           toast.error("Авторизуйтесь заново");
+        } else if (res.status === 503) {
+          setHasKey(false); // покажем баннер
+          toast.error("API-ключ Anthropic не задан");
         } else {
           toast.error(`Ошибка ${res.status}`);
         }
@@ -260,7 +277,38 @@ export function AiPanel({ boardId }: Props) {
         </SheetHeader>
 
         <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
-          {messages.length === 0 ? (
+          {hasKey === false ? (
+            <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-4 space-y-3 text-sm">
+              <p className="font-medium">Чтобы агент заработал, добавь API-ключ.</p>
+              <ol className="list-decimal pl-5 space-y-1.5 text-muted-foreground">
+                <li>
+                  Открой{" "}
+                  <a
+                    href="https://console.anthropic.com/settings/keys"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline underline-offset-2"
+                  >
+                    console.anthropic.com → API Keys
+                  </a>
+                  , нажми <span className="font-mono">Create Key</span>.
+                </li>
+                <li>
+                  Открой <span className="font-mono">.env.local</span> в папке
+                  проекта.
+                </li>
+                <li>
+                  Вставь ключ в <span className="font-mono">ANTHROPIC_API_KEY</span>.
+                </li>
+                <li>Перезапусти dev-сервер (Ctrl+C → npm run dev).</li>
+              </ol>
+              <p className="text-xs text-muted-foreground">
+                Биллинг отдельный от Claude Max. На старте ~$5 хватит надолго.
+              </p>
+            </div>
+          ) : null}
+
+          {hasKey && messages.length === 0 ? (
             <div className="text-sm text-muted-foreground space-y-3">
               <p>Помогаю управлять задачами на доске. Несколько идей:</p>
               <div className="flex flex-wrap gap-1.5">
@@ -305,19 +353,25 @@ export function AiPanel({ boardId }: Props) {
                 send();
               }
             }}
-            placeholder="Cmd/Ctrl+Enter — отправить"
+            placeholder={
+              hasKey === false
+                ? "Сначала добавь API-ключ ☝"
+                : "Cmd/Ctrl+Enter — отправить"
+            }
             rows={2}
-            disabled={streaming || !conversationId}
+            disabled={streaming || !conversationId || !hasKey}
             className="resize-none"
           />
           <div className="flex justify-between items-center">
-            <span className="text-xs text-muted-foreground">
-              {process.env.NEXT_PUBLIC_AI_MODEL_LABEL ?? "Claude"}
+            <span className="text-xs text-muted-foreground font-mono">
+              {process.env.NEXT_PUBLIC_AI_MODEL_LABEL ?? modelLabel}
             </span>
             <Button
               size="sm"
               onClick={send}
-              disabled={streaming || !input.trim() || !conversationId}
+              disabled={
+                streaming || !input.trim() || !conversationId || !hasKey
+              }
             >
               <Send className="size-3.5" /> Отправить
             </Button>
