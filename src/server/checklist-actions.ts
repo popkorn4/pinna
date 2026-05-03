@@ -10,7 +10,9 @@ import {
   NotFoundError,
   assertBoardAccess,
   canMutateContent,
+  canReportProgress,
 } from "@/lib/auth/permissions";
+import { logActivity } from "@/lib/activity";
 import { prisma } from "@/lib/db/prisma";
 import {
   actionError,
@@ -198,16 +200,34 @@ export async function toggleChecklistItem(
     const user = await requireUser();
     const { boardId } = await boardOfItem(itemId);
     const role = await assertBoardAccess(user.id, boardId);
-    if (!canMutateContent(role)) throw new ForbiddenError();
+    // почему canReportProgress а не canMutateContent: галочка — это форма
+    // отчёта, исполнители тоже могут отмечать пункты как сделанные
+    if (!canReportProgress(role)) throw new ForbiddenError();
 
     const item = await prisma.checklistItem.findUnique({
       where: { id: itemId },
-      select: { done: true },
+      select: {
+        done: true,
+        text: true,
+        checklist: { select: { cardId: true, card: { select: { title: true } } } },
+      },
     });
     if (!item) throw new NotFoundError();
+    const newDone = !item.done;
     await prisma.checklistItem.update({
       where: { id: itemId },
-      data: { done: !item.done },
+      data: { done: newDone },
+    });
+    await logActivity({
+      boardId,
+      userId: user.id,
+      cardId: item.checklist.cardId,
+      type: "CHECKLIST_ITEM_TOGGLED",
+      payload: {
+        text: item.text,
+        done: newDone,
+        cardTitle: item.checklist.card.title,
+      },
     });
     await revalidateAndNotifyBoard(boardId);
     return actionOk(undefined);

@@ -13,7 +13,7 @@ type Props = {
   invite: {
     id: string;
     token: string;
-    role: "OWNER" | "MEMBER" | "VIEWER";
+    role: "OWNER" | "MEMBER" | "CONTRIBUTOR" | "VIEWER";
     expiresLabel: string;
     board: { id: string; title: string; description: string | null };
     invitedBy: {
@@ -77,7 +77,11 @@ export function InviteRow({ invite }: Props) {
           <span>
             как{" "}
             <span className="font-mono">
-              {invite.role === "MEMBER" ? "участник" : "наблюдатель"}
+              {invite.role === "MEMBER"
+                ? "участник"
+                : invite.role === "CONTRIBUTOR"
+                  ? "исполнитель"
+                  : "наблюдатель"}
             </span>
           </span>
           <span>·</span>

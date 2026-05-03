@@ -73,6 +73,7 @@ type Props = {
   boardId: string;
   boardLabels: LabelView[];
   canEdit: boolean;
+  canReport: boolean;
 };
 
 type Details = Awaited<ReturnType<typeof getCardDetails>>;
@@ -84,6 +85,7 @@ export function CardModal({
   boardId,
   boardLabels,
   canEdit,
+  canReport,
 }: Props) {
   const router = useRouter();
   const pathname = usePathname();
@@ -243,6 +245,7 @@ export function CardModal({
                   cardId={card.id}
                   checklists={details.checklists}
                   canEdit={canEdit}
+                  canReport={canReport}
                   onChange={refreshDetails}
                 />
               ) : null}
@@ -252,7 +255,7 @@ export function CardModal({
                   cardId={card.id}
                   comments={details.comments}
                   currentUserId={details.currentUserId}
-                  canEdit={canEdit}
+                  canReport={canReport}
                   onChange={refreshDetails}
                 />
               ) : null}
@@ -347,11 +350,13 @@ function ChecklistsSection({
   cardId,
   checklists,
   canEdit,
+  canReport,
   onChange,
 }: {
   cardId: string;
   checklists: Checklist[];
   canEdit: boolean;
+  canReport: boolean;
   onChange: () => void;
 }) {
   const router = useRouter();
@@ -431,6 +436,7 @@ function ChecklistsSection({
             key={cl.id}
             checklist={cl}
             canEdit={canEdit}
+            canReport={canReport}
             onChange={onChange}
           />
         ))}
@@ -442,10 +448,12 @@ function ChecklistsSection({
 function ChecklistView({
   checklist,
   canEdit,
+  canReport,
   onChange,
 }: {
   checklist: Checklist;
   canEdit: boolean;
+  canReport: boolean;
   onChange: () => void;
 }) {
   const router = useRouter();
@@ -546,7 +554,7 @@ function ChecklistView({
           >
             <Checkbox
               checked={it.done}
-              disabled={!canEdit || pending}
+              disabled={!canReport || pending}
               onCheckedChange={() => toggle(it.id)}
             />
             <span
@@ -631,13 +639,13 @@ function CommentsSection({
   cardId,
   comments,
   currentUserId,
-  canEdit,
+  canReport,
   onChange,
 }: {
   cardId: string;
   comments: Comment[];
   currentUserId: string;
-  canEdit: boolean;
+  canReport: boolean;
   onChange: () => void;
 }) {
   const router = useRouter();
@@ -664,7 +672,7 @@ function CommentsSection({
         <MessageSquare className="size-3" /> Комментарии
       </h3>
 
-      {canEdit ? (
+      {canReport ? (
         <div className="mb-4 space-y-2">
           <Textarea
             value={body}

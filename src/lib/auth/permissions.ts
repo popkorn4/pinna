@@ -6,7 +6,8 @@ import type { BoardRole } from "@prisma/client";
 const ROLE_RANK: Record<BoardRole, number> = {
   OWNER: 0,
   MEMBER: 1,
-  VIEWER: 2,
+  CONTRIBUTOR: 2,
+  VIEWER: 3,
 };
 
 export class ForbiddenError extends Error {
@@ -55,8 +56,15 @@ export function canDeleteBoard(role: BoardRole) {
 }
 
 export function canMutateContent(role: BoardRole) {
-  // OWNER + MEMBER могут менять колонки/карточки; VIEWER только читает
+  // Полное редактирование: создавать/двигать/удалять карточки и колонки,
+  // менять дедлайны, метки, описание. CONTRIBUTOR не может — только отчитываться.
   return role === "OWNER" || role === "MEMBER";
+}
+
+export function canReportProgress(role: BoardRole) {
+  // Отчитываться о работе: галочки чек-листов и комментарии.
+  // Доступно всем кроме VIEWER.
+  return role !== "VIEWER";
 }
 
 export function canManageMembers(role: BoardRole) {

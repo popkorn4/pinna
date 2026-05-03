@@ -9,8 +9,9 @@ import {
   ForbiddenError,
   NotFoundError,
   assertBoardAccess,
-  canMutateContent,
+  canReportProgress,
 } from "@/lib/auth/permissions";
+import { logActivity } from "@/lib/activity";
 import { prisma } from "@/lib/db/prisma";
 import {
   actionError,
@@ -48,7 +49,9 @@ export async function createComment(
     const user = await requireUser();
     const boardId = await boardOfCard(cardId);
     const role = await assertBoardAccess(user.id, boardId);
-    if (!canMutateContent(role)) throw new ForbiddenError();
+    // почему canReportProgress: комментарии — главный способ отчёта;
+    // исполнители должны иметь возможность писать о выполненной работе
+    if (!canReportProgress(role)) throw new ForbiddenError();
 
     const parsed = bodySchema.safeParse(body);
     if (!parsed.success) {
@@ -58,6 +61,20 @@ export async function createComment(
     const c = await prisma.comment.create({
       data: { cardId, authorId: user.id, body: parsed.data },
       select: { id: true },
+    });
+    const cardData = await prisma.card.findUnique({
+      where: { id: cardId },
+      select: { title: true },
+    });
+    await logActivity({
+      boardId,
+      userId: user.id,
+      cardId,
+      type: "COMMENT_CREATED",
+      payload: {
+        cardTitle: cardData?.title,
+        preview: parsed.data.slice(0, 200),
+      },
     });
     await revalidateAndNotifyBoard(boardId);
     return actionOk({ id: c.id });
@@ -82,7 +99,8 @@ export async function updateComment(
     if (!c) throw new NotFoundError();
     if (c.authorId !== user.id) throw new ForbiddenError();
     const role = await assertBoardAccess(user.id, c.card.column.boardId);
-    if (!canMutateContent(role)) throw new ForbiddenError();
+    // править свой комментарий может любой, кто может отчитываться
+    if (!canReportProgress(role)) throw new ForbiddenError();
 
     const parsed = bodySchema.safeParse(body);
     if (!parsed.success) return actionError("Проверьте поля");

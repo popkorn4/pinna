@@ -86,7 +86,11 @@ export default async function InvitePage({ params }: Props) {
                 {invite.invitedBy.name || invite.invitedBy.email} приглашает
                 вас как{" "}
                 <span className="font-mono">
-                  {invite.role === "MEMBER" ? "участника" : "наблюдателя"}
+                  {invite.role === "MEMBER"
+                    ? "участника"
+                    : invite.role === "CONTRIBUTOR"
+                      ? "исполнителя"
+                      : "наблюдателя"}
                 </span>
                 .
               </p>

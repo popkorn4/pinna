@@ -11,6 +11,7 @@ type Props = {
   columns: ColumnView[];
   boardLabels: LabelView[];
   canEdit: boolean;
+  canReport: boolean;
 };
 
 export function CardModalLoader({
@@ -18,6 +19,7 @@ export function CardModalLoader({
   columns,
   boardLabels,
   canEdit,
+  canReport,
 }: Props) {
   const params = useParams<{ boardId: string }>();
   const boardId = params.boardId ?? "";
@@ -39,6 +41,7 @@ export function CardModalLoader({
       boardId={boardId}
       boardLabels={boardLabels}
       canEdit={canEdit}
+      canReport={canReport}
     />
   );
 }

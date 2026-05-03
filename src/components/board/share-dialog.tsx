@@ -40,7 +40,7 @@ import type { BoardRole } from "@prisma/client";
 
 const inviteFormSchema = z.object({
   email: z.string().trim().toLowerCase().email("Неверный email"),
-  role: z.enum(["MEMBER", "VIEWER"]),
+  role: z.enum(["MEMBER", "CONTRIBUTOR", "VIEWER"]),
 });
 type InviteForm = z.infer<typeof inviteFormSchema>;
 
@@ -152,6 +152,9 @@ export function ShareDialog({ boardId, currentUserId, myRole }: Props) {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="MEMBER">Участник</SelectItem>
+                        <SelectItem value="CONTRIBUTOR">
+                          Исполнитель
+                        </SelectItem>
                         <SelectItem value="VIEWER">Наблюдатель</SelectItem>
                       </SelectContent>
                     </Select>
@@ -164,26 +167,27 @@ export function ShareDialog({ boardId, currentUserId, myRole }: Props) {
             </div>
 
             {lastInviteUrl ? (
-              <div className="rounded-md border border-border/60 bg-muted/40 p-2 flex items-center gap-2">
-                <span className="text-xs text-muted-foreground shrink-0">
-                  Ссылка:
-                </span>
-                <code className="text-xs truncate flex-1">
+              <div className="rounded-md border border-border/60 bg-muted/40 p-2 space-y-2 min-w-0">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="text-xs text-muted-foreground shrink-0">
+                    Ссылка:
+                  </span>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    className="ml-auto h-6 px-2 text-xs"
+                    onClick={() => {
+                      navigator.clipboard.writeText(lastInviteUrl);
+                      toast.success("Скопировано");
+                    }}
+                  >
+                    <Copy className="size-3" /> Копировать
+                  </Button>
+                </div>
+                <code className="block text-[10px] font-mono break-all bg-background/60 rounded p-1.5 max-h-20 overflow-y-auto">
                   {lastInviteUrl}
                 </code>
-                <Button
-                  type="button"
-                  size="icon"
-                  variant="ghost"
-                  className="size-7 shrink-0"
-                  onClick={() => {
-                    navigator.clipboard.writeText(lastInviteUrl);
-                    toast.success("Скопировано");
-                  }}
-                  aria-label="Скопировать"
-                >
-                  <Copy className="size-3.5" />
-                </Button>
               </div>
             ) : null}
           </form>
@@ -232,7 +236,11 @@ export function ShareDialog({ boardId, currentUserId, myRole }: Props) {
                         {inv.email}
                       </span>
                       <span className="text-xs text-muted-foreground font-mono">
-                        {inv.role === "MEMBER" ? "уч." : "набл."}
+                        {inv.role === "MEMBER"
+                          ? "уч."
+                          : inv.role === "CONTRIBUTOR"
+                            ? "исп."
+                            : "набл."}
                       </span>
                       {canManage ? (
                         <Button
@@ -352,6 +360,7 @@ function MemberRow({
             <SelectContent>
               <SelectItem value="OWNER">Владелец</SelectItem>
               <SelectItem value="MEMBER">Участник</SelectItem>
+              <SelectItem value="CONTRIBUTOR">Исполнитель</SelectItem>
               <SelectItem value="VIEWER">Наблюдатель</SelectItem>
             </SelectContent>
           </Select>
@@ -377,7 +386,9 @@ function MemberRow({
             ? "владелец"
             : role === "MEMBER"
               ? "участник"
-              : "наблюдатель"}
+              : role === "CONTRIBUTOR"
+                ? "исполнитель"
+                : "наблюдатель"}
         </span>
       )}
     </li>

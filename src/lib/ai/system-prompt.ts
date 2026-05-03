@@ -1,9 +1,11 @@
+import type { BoardRole } from "@prisma/client";
+
 import { prisma } from "@/lib/db/prisma";
 
 type SnapshotInput = {
   boardId: string;
   user: { name?: string | null; email?: string | null };
-  role: "OWNER" | "MEMBER" | "VIEWER";
+  role: BoardRole;
 };
 
 /**

@@ -5,7 +5,11 @@ import { BoardDnd } from "@/components/board/board-dnd";
 import { BoardRealtime } from "@/components/board/board-realtime";
 import { CardModalLoader } from "@/components/board/card-modal-loader";
 import { requireUser } from "@/lib/auth";
-import { NotFoundError, canMutateContent } from "@/lib/auth/permissions";
+import {
+  NotFoundError,
+  canMutateContent,
+  canReportProgress,
+} from "@/lib/auth/permissions";
 import { getBoard } from "@/server/board-actions";
 import type { ColumnView, LabelView } from "@/components/board/types";
 
@@ -29,6 +33,7 @@ export default async function BoardPage({ params, searchParams }: Props) {
 
   const { board, role } = data;
   const canEdit = canMutateContent(role);
+  const canReport = canReportProgress(role);
 
   // Маппим в чистый сериализуемый вид (Date оставляем — RSC сериализует)
   const columns: ColumnView[] = board.columns.map((c) => ({
@@ -72,6 +77,7 @@ export default async function BoardPage({ params, searchParams }: Props) {
         columns={columns}
         boardLabels={boardLabels}
         canEdit={canEdit}
+        canReport={canReport}
       />
 
       <BoardRealtime boardId={board.id} />

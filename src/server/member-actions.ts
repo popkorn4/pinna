@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { logActivity } from "@/lib/activity";
 import { revalidateAndNotifyBoard } from "@/lib/realtime/notify";
 import { redirect } from "next/navigation";
 import { randomUUID } from "node:crypto";
@@ -188,6 +189,13 @@ export async function acceptInvite(
         where: { id: invite.id },
         data: { acceptedAt: new Date() },
       });
+    });
+
+    await logActivity({
+      boardId: invite.boardId,
+      userId: user.id,
+      type: "MEMBER_JOINED",
+      payload: { role: invite.role },
     });
 
     await revalidateAndNotifyBoard(invite.boardId);

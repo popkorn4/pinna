@@ -11,6 +11,7 @@ import {
   assertBoardAccess,
   canMutateContent,
 } from "@/lib/auth/permissions";
+import { logActivity } from "@/lib/activity";
 import { prisma } from "@/lib/db/prisma";
 import { POSITION_STEP } from "@/lib/position";
 import {
@@ -169,9 +170,16 @@ export async function createCard(
         position,
         createdById: user.id,
       },
-      select: { id: true },
+      select: { id: true, title: true },
     });
 
+    await logActivity({
+      boardId,
+      userId: user.id,
+      cardId: card.id,
+      type: "CARD_CREATED",
+      payload: { title: card.title, columnId },
+    });
     await revalidateAndNotifyBoard(boardId);
     return actionOk({ id: card.id });
   } catch (e) {
@@ -198,6 +206,11 @@ export async function updateCard(
       return actionError("Проверьте поля", fieldErrorsFromZod(parsed.error));
     }
 
+    const before = await prisma.card.findUnique({
+      where: { id: cardId },
+      select: { title: true, dueDate: true },
+    });
+
     await prisma.card.update({
       where: { id: cardId },
       data: {
@@ -210,6 +223,28 @@ export async function updateCard(
           : {}),
       },
     });
+
+    if (parsed.data.title && before && parsed.data.title !== before.title) {
+      await logActivity({
+        boardId,
+        userId: user.id,
+        cardId,
+        type: "CARD_RENAMED",
+        payload: { from: before.title, to: parsed.data.title },
+      });
+    }
+    if (parsed.data.dueDate !== undefined) {
+      await logActivity({
+        boardId,
+        userId: user.id,
+        cardId,
+        type: parsed.data.dueDate ? "CARD_DUE_SET" : "CARD_DUE_REMOVED",
+        payload: {
+          cardTitle: before?.title,
+          dueDate: parsed.data.dueDate?.toISOString(),
+        },
+      });
+    }
 
     await revalidateAndNotifyBoard(boardId);
     return actionOk(undefined);
@@ -257,9 +292,20 @@ export async function archiveCard(
     const role = await assertBoardAccess(user.id, boardId);
     if (!canMutateContent(role)) throw new ForbiddenError();
 
+    const before = await prisma.card.findUnique({
+      where: { id: cardId },
+      select: { title: true },
+    });
     await prisma.card.update({
       where: { id: cardId },
       data: { archivedAt: new Date() },
+    });
+    await logActivity({
+      boardId,
+      userId: user.id,
+      cardId,
+      type: "CARD_ARCHIVED",
+      payload: { title: before?.title },
     });
     await revalidateAndNotifyBoard(boardId);
     return actionOk(undefined);
@@ -297,7 +343,18 @@ export async function deleteCard(
     const role = await assertBoardAccess(user.id, boardId);
     if (!canMutateContent(role)) throw new ForbiddenError();
 
+    const before = await prisma.card.findUnique({
+      where: { id: cardId },
+      select: { title: true },
+    });
     await prisma.card.delete({ where: { id: cardId } });
+    await logActivity({
+      boardId,
+      userId: user.id,
+      cardId: null, // карточки уже нет — не привязываем
+      type: "CARD_DELETED",
+      payload: { title: before?.title },
+    });
     await revalidateAndNotifyBoard(boardId);
     return actionOk(undefined);
   } catch (e) {
@@ -404,10 +461,40 @@ export async function moveCard(input: {
       return actionOk({ position: card.position });
     }
 
+    const fromColumnId = card.columnId;
     await prisma.card.update({
       where: { id: cardId },
       data: { columnId: targetColumnId, position: newPos },
     });
+
+    // Логируем только реальный cross-column перенос (внутри колонки — спам)
+    if (fromColumnId !== targetColumnId) {
+      const [cardData, fromCol, toCol] = await Promise.all([
+        prisma.card.findUnique({
+          where: { id: cardId },
+          select: { title: true },
+        }),
+        prisma.column.findUnique({
+          where: { id: fromColumnId },
+          select: { title: true },
+        }),
+        prisma.column.findUnique({
+          where: { id: targetColumnId },
+          select: { title: true },
+        }),
+      ]);
+      await logActivity({
+        boardId: targetCol.boardId,
+        userId: user.id,
+        cardId,
+        type: "CARD_MOVED",
+        payload: {
+          title: cardData?.title,
+          from: fromCol?.title,
+          to: toCol?.title,
+        },
+      });
+    }
 
     // Ребаланс если соседи слиплись
     const neighbors = await prisma.card.findMany({
