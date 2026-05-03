@@ -38,7 +38,7 @@ export function AnalyticsView({ analytics }: Props) {
         <h2 className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-4">
           Throughput · 8 недель
         </h2>
-        <div className="rounded-lg border border-border/60 p-4 bg-card/40">
+        <div className="rounded-lg border border-border/60 p-4 bg-card">
           <ResponsiveContainer width="100%" height={250}>
             <BarChart data={analytics.throughput}>
               <CartesianGrid
@@ -159,7 +159,7 @@ export function AnalyticsView({ analytics }: Props) {
 
 function Stat({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-lg border border-border/60 bg-card/40 p-4">
+    <div className="rounded-lg border border-border/60 bg-card p-4">
       <div className="text-xs text-muted-foreground uppercase tracking-wider">
         {label}
       </div>

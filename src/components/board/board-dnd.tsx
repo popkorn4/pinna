@@ -387,7 +387,7 @@ export function BoardDnd({ boardId, initialColumns, canEdit }: Props) {
         {columns.map((col) => (
           <section
             key={col.id}
-            className="w-80 shrink-0 rounded-lg border border-border/60 bg-card/40"
+            className="w-80 shrink-0 rounded-lg border border-border/60 bg-card"
           />
         ))}
       </div>

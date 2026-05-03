@@ -140,7 +140,7 @@ export function CalendarView({ boardId, cards, monthParam, canEdit }: Props) {
         {["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"].map((d) => (
           <div
             key={d}
-            className="bg-card/40 px-2 py-1.5 text-[10px] uppercase tracking-wider text-muted-foreground"
+            className="bg-card px-2 py-1.5 text-[10px] uppercase tracking-wider text-muted-foreground"
           >
             {d}
           </div>

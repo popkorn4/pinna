@@ -57,7 +57,7 @@ export function AddColumnButton({ boardId }: Props) {
   }
 
   return (
-    <div className="w-80 shrink-0 rounded-lg border border-border bg-card/40 p-2 space-y-2">
+    <div className="w-80 shrink-0 rounded-lg border border-border bg-card p-2 space-y-2">
       <Input
         ref={inputRef}
         value={title}

@@ -54,39 +54,42 @@
 }
 
 :root {
+  /* почему карточки/попапы — почти белые, а фон — заметно темнее:
+     создаёт «paper on paper» эффект, объекты явно плывут над поверхностью */
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
+  --card-foreground: oklch(0.16 0.02 60);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
+  --popover-foreground: oklch(0.16 0.02 60);
   --primary: oklch(0.205 0 0);
   --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
+  --secondary: oklch(0.93 0.01 75);
   --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
+  --muted: oklch(0.92 0.01 75);
+  --muted-foreground: oklch(0.5 0.015 65);
+  --accent: oklch(0.92 0.01 75);
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  /* почему чуть темнее границы: на более ярком фоне полупрозрачные рамки
+     border-border/60 раньше "терялись"; +5% контраста хватает */
+  --border: oklch(0.86 0.01 75);
+  --input: oklch(0.86 0.01 75);
+  --ring: oklch(0.62 0.13 60);
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar: oklch(0.95 0.012 75);
+  --sidebar-foreground: oklch(0.16 0.02 60);
   --sidebar-primary: oklch(0.205 0 0);
   --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent: oklch(0.92 0.01 75);
   --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
-  /* почему слегка тёплый бэкграунд: чистый белый + Fraunces смотрится холодно;
-     лёгкий кремовый тон делает интерфейс «бумажным» */
-  --background: oklch(0.992 0.005 80);
+  --sidebar-border: oklch(0.86 0.01 75);
+  --sidebar-ring: oklch(0.62 0.13 60);
+  /* Фон заметно темнее белого — кремовая «бумага», на которой видны карточки */
+  --background: oklch(0.955 0.012 75);
   --foreground: oklch(0.16 0.02 60);
   /* брендовая охра — акцент: подзаголовки, рамка-«полоска» бренда, hover-фон */
   --brand: oklch(0.62 0.13 60);
