@@ -32,58 +32,58 @@ export function CardPreview({ card, isDragging }: Props) {
       onClick={open}
       data-card-id={card.id}
       className={cn(
-        "w-full text-left rounded-md border border-border/60 bg-card p-2.5 hover:border-border transition-colors group",
+        "relative w-full text-left rounded-md border border-border/60 bg-card overflow-hidden hover:border-border transition-colors group",
         isDragging && "opacity-40",
       )}
     >
+      {/* Полосы меток слева — каждая занимает равную долю по высоте.
+          почему так: метки видны как «корешок» карточки, не съедают
+          вертикальное место сверху и читаются с любого расстояния. */}
       {card.labels.length > 0 ? (
-        <div className="flex flex-wrap gap-1 mb-2">
+        <div className="absolute left-0 top-0 bottom-0 w-1 flex flex-col">
           {card.labels.map((l) => (
             <span
               key={l.id}
-              className="h-1.5 rounded-full"
-              style={{
-                background: labelHex(l.color),
-                width: l.name ? "auto" : "32px",
-                minWidth: "32px",
-              }}
+              className="flex-1"
+              style={{ background: labelHex(l.color) }}
               title={l.name || undefined}
-            >
-              {l.name ? (
-                <span className="block text-[10px] leading-none px-1.5 py-0.5 text-white font-medium">
-                  {l.name}
-                </span>
-              ) : null}
-            </span>
+            />
           ))}
         </div>
       ) : null}
-      <h4 className="font-medium text-sm leading-snug line-clamp-3">
-        {card.title}
-      </h4>
-      {(card.description || card.dueDate || card.assignee) && (
-        <div className="mt-2 flex items-center gap-3 text-xs text-muted-foreground">
-          {card.description ? (
-            <AlignLeft className="size-3.5" aria-label="Есть описание" />
-          ) : null}
-          {card.dueDate ? <DueBadge dueDate={card.dueDate} /> : null}
-          {card.assignee ? (
-            <Avatar
-              className="size-5 ml-auto"
-              title={card.assignee.name || card.assignee.email}
-            >
-              {card.assignee.image ? (
-                <AvatarImage src={card.assignee.image} alt="" />
-              ) : null}
-              <AvatarFallback className="text-[8px]">
-                {(card.assignee.name || card.assignee.email)
-                  .slice(0, 1)
-                  .toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-          ) : null}
-        </div>
-      )}
+      <div
+        className={cn(
+          "p-2.5",
+          card.labels.length > 0 && "pl-3",
+        )}
+      >
+        <h4 className="font-medium text-sm leading-snug line-clamp-3">
+          {card.title}
+        </h4>
+        {(card.description || card.dueDate || card.assignee) && (
+          <div className="mt-2 flex items-center gap-3 text-xs text-muted-foreground">
+            {card.description ? (
+              <AlignLeft className="size-3.5" aria-label="Есть описание" />
+            ) : null}
+            {card.dueDate ? <DueBadge dueDate={card.dueDate} /> : null}
+            {card.assignee ? (
+              <Avatar
+                className="size-5 ml-auto"
+                title={card.assignee.name || card.assignee.email}
+              >
+                {card.assignee.image ? (
+                  <AvatarImage src={card.assignee.image} alt="" />
+                ) : null}
+                <AvatarFallback className="text-[8px]">
+                  {(card.assignee.name || card.assignee.email)
+                    .slice(0, 1)
+                    .toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+            ) : null}
+          </div>
+        )}
+      </div>
     </button>
   );
 }

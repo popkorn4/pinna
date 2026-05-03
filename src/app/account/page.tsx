@@ -2,25 +2,26 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UserMenu } from "@/components/user-menu";
+import { AvatarUploader } from "@/components/account/avatar-uploader";
 import { InviteRow } from "@/components/account/invite-row";
 import { requireUser } from "@/lib/auth";
+import { prisma } from "@/lib/db/prisma";
 import { listMyPendingInvites } from "@/server/member-actions";
 
 export const dynamic = "force-dynamic";
 
 export default async function AccountPage() {
-  const user = await requireUser();
+  const sessionUser = await requireUser();
+  // Загружаем актуального юзера из БД — у session-объекта `image` мог
+  // отстать от свежего аватара (JWT кешируется до следующего входа).
+  const user = await prisma.user.findUnique({
+    where: { id: sessionUser.id },
+    select: { id: true, name: true, email: true, image: true },
+  });
+  if (!user) throw new Error("user gone");
   const invites = await listMyPendingInvites();
-
-  const initials = (user.name || user.email || "?")
-    .split(/\s+/)
-    .map((s) => s[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
 
   return (
     <div className="min-h-dvh flex flex-col">
@@ -46,22 +47,19 @@ export default async function AccountPage() {
           <h1 className="font-display text-4xl md:text-5xl tracking-tight">
             {user.name || "Без имени"}
           </h1>
-          <div className="mt-6 flex items-center gap-4">
-            <Avatar className="size-14">
-              {user.image ? <AvatarImage src={user.image} alt="" /> : null}
-              <AvatarFallback>{initials}</AvatarFallback>
-            </Avatar>
-            <div className="text-sm text-muted-foreground">
-              <div className="font-mono">{user.email}</div>
-              <div>
-                <Link
-                  href="/boards"
-                  className="underline underline-offset-2 hover:text-foreground"
-                >
-                  Мои доски
-                </Link>
-              </div>
-            </div>
+          <p className="mt-2 text-sm text-muted-foreground font-mono">
+            {user.email}
+          </p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            <Link
+              href="/boards"
+              className="underline underline-offset-2 hover:text-foreground"
+            >
+              Мои доски
+            </Link>
+          </p>
+          <div className="mt-8">
+            <AvatarUploader user={user} />
           </div>
         </section>
 

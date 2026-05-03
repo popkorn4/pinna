@@ -2,12 +2,14 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useTheme } from "next-themes";
 import { format, formatDistanceToNow } from "date-fns";
 import { ru } from "date-fns/locale";
 import { Activity as ActivityIcon, Filter } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { userTextColor } from "@/lib/user-color";
 import {
   Select,
   SelectContent,
@@ -40,6 +42,16 @@ type Props = {
 
 export function ActivityPanel({ boardId, members }: Props) {
   const router = useRouter();
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  // почему mounted: SSR не знает реальную тему, без mounted проскакивают цвета
+  // первого фрейма и React ругается на mismatch
+  const theme: "light" | "dark" = !mounted
+    ? "light"
+    : resolvedTheme === "dark"
+      ? "dark"
+      : "light";
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<ActivityRow[] | null>(null);
   const [filterUserId, setFilterUserId] = useState<string>("all");
@@ -114,6 +126,8 @@ export function ActivityPanel({ boardId, members }: Props) {
                     <ActivityItem
                       key={row.id}
                       row={row}
+                      boardId={boardId}
+                      theme={theme}
                       onJump={(cid) => {
                         const url = new URL(window.location.href);
                         url.searchParams.set("card", cid);
@@ -136,9 +150,13 @@ export function ActivityPanel({ boardId, members }: Props) {
 
 function ActivityItem({
   row,
+  boardId,
+  theme,
   onJump,
 }: {
   row: ActivityRow;
+  boardId: string;
+  theme: "light" | "dark";
   onJump: (cardId: string) => void;
 }) {
   const name = row.user?.name || row.user?.email || "Кто-то";
@@ -150,6 +168,9 @@ function ActivityItem({
     .toUpperCase();
 
   const text = renderActivity(row);
+  const color = row.user
+    ? userTextColor(row.user.id, boardId, theme)
+    : undefined;
 
   return (
     <li className="flex gap-2.5 text-sm">
@@ -157,11 +178,19 @@ function ActivityItem({
         {row.user?.image ? (
           <AvatarImage src={row.user.image} alt="" />
         ) : null}
-        <AvatarFallback className="text-[10px]">{initials}</AvatarFallback>
+        <AvatarFallback
+          className="text-[10px]"
+          style={color ? { background: color, color: "#fff" } : undefined}
+        >
+          {initials}
+        </AvatarFallback>
       </Avatar>
       <div className="flex-1 min-w-0">
         <div className="leading-snug">
-          <span className="font-medium">{name}</span> {text}
+          <span className="font-medium" style={color ? { color } : undefined}>
+            {name}
+          </span>{" "}
+          {text}
         </div>
         <div className="flex items-center gap-2 mt-0.5">
           <span

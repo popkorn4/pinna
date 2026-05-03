@@ -25,10 +25,10 @@ import type { BoardRole } from "@prisma/client";
 
 const inviteSchema = z.object({
   email: z.string().trim().toLowerCase().email("Неверный email"),
-  role: z.enum(["MEMBER", "VIEWER"]),
+  role: z.enum(["MEMBER", "CONTRIBUTOR", "VIEWER"]),
 });
 
-const roleSchema = z.enum(["OWNER", "MEMBER", "VIEWER"]);
+const roleSchema = z.enum(["OWNER", "MEMBER", "CONTRIBUTOR", "VIEWER"]);
 
 function fieldErrorsFromZod(err: z.ZodError): Record<string, string> {
   const out: Record<string, string> = {};
