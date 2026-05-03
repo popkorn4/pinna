@@ -61,7 +61,7 @@ export function BoardHeader({
   return (
     <header className="border-b border-border/60">
       <div className="flex items-center justify-between px-4 md:px-8 py-4">
-        <Button asChild variant="ghost" size="sm">
+        <Button asChild variant="outline" size="default">
           <Link href="/boards">
             <ChevronLeft className="size-4" /> Все доски
           </Link>

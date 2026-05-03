@@ -32,7 +32,7 @@ export default async function AnalyticsPage({ params }: Props) {
   return (
     <div className="min-h-dvh flex flex-col">
       <header className="flex items-center justify-between px-4 md:px-8 py-4 border-b border-border/60">
-        <Button asChild variant="ghost" size="sm">
+        <Button asChild variant="outline" size="default">
           <Link href={`/boards/${board.id}`}>
             <ChevronLeft className="size-4" /> К доске
           </Link>
