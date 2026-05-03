@@ -175,10 +175,19 @@ export async function getBoard(boardId: string) {
               assignee: {
                 select: { id: true, name: true, email: true, image: true },
               },
+              labels: {
+                select: {
+                  label: { select: { id: true, name: true, color: true } },
+                },
+              },
             },
           },
           _count: { select: { cards: { where: { archivedAt: null } } } },
         },
+      },
+      labels: {
+        orderBy: [{ position: "asc" }, { name: "asc" }],
+        select: { id: true, name: true, color: true },
       },
     },
   });

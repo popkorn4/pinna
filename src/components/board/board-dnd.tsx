@@ -49,6 +49,11 @@ export function BoardDnd({ boardId, initialColumns, canEdit }: Props) {
   const [activeCard, setActiveCard] = useState<CardView | null>(null);
   const [activeColumn, setActiveColumn] = useState<ColumnView | null>(null);
   const [pending, startTransition] = useTransition();
+  // почему mounted: dnd-kit генерирует aria-describedby="DndDescribedBy-N",
+  // где N — глобальный счётчик. На сервере и клиенте N может расходиться,
+  // что выдаёт hydration mismatch. Рендерим DnD только после mount.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
   // почему храним отдельно: onDragOver мутирует локальное `columns`,
   // и к onDragEnd мы уже не знаем, в какой колонке карточка БЫЛА в БД.
   // Без этого "same column reorder" срабатывает для cross-column drag,
@@ -374,6 +379,21 @@ export function BoardDnd({ boardId, initialColumns, canEdit }: Props) {
     });
   }
 
+  // SSR-фоллбек: те же колонки, без DnD-обёртки. Идентичная разметка
+  // важна для гидратации SortableContext-детей.
+  if (!mounted) {
+    return (
+      <div className="px-4 md:px-8 py-6 flex items-stretch gap-4 h-full min-h-[60vh]">
+        {columns.map((col) => (
+          <section
+            key={col.id}
+            className="w-80 shrink-0 rounded-lg border border-border/60 bg-card/40"
+          />
+        ))}
+      </div>
+    );
+  }
+
   return (
     <DndContext
       sensors={sensors}
@@ -381,7 +401,10 @@ export function BoardDnd({ boardId, initialColumns, canEdit }: Props) {
       onDragStart={onDragStart}
       onDragOver={onDragOver}
       onDragEnd={onDragEnd}
-      onDragCancel={() => setActiveCard(null)}
+      onDragCancel={() => {
+        setActiveCard(null);
+        setActiveColumn(null);
+      }}
     >
       <SortableContext
         items={columns.map((c) => c.id)}

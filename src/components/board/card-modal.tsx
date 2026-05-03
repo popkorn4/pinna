@@ -4,9 +4,16 @@ import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { format } from "date-fns";
+import { format, formatDistanceToNow } from "date-fns";
 import { ru } from "date-fns/locale";
-import { Archive, Calendar as CalIcon, Trash2 } from "lucide-react";
+import {
+  Archive,
+  Calendar as CalIcon,
+  CheckSquare,
+  MessageSquare,
+  Trash2,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import {
@@ -19,8 +26,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -34,30 +43,71 @@ import {
 } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
 import { InlineTextEdit } from "@/components/board/inline-text-edit";
+import { CardLabelsPopover } from "@/components/board/card-labels-popover";
 import {
   archiveCard,
   deleteCard,
+  getCardDetails,
   updateCard,
 } from "@/server/card-actions";
-import type { CardView } from "./types";
+import {
+  addChecklistItem,
+  createChecklist,
+  deleteChecklist,
+  deleteChecklistItem,
+  toggleChecklistItem,
+  updateChecklistItem,
+} from "@/server/checklist-actions";
+import {
+  createComment,
+  deleteComment,
+  updateComment,
+} from "@/server/comment-actions";
+import type { CardView, LabelView } from "./types";
 
 type Props = {
   open: boolean;
   card: CardView | null;
   columnTitle?: string;
+  boardId: string;
+  boardLabels: LabelView[];
   canEdit: boolean;
 };
 
-export function CardModal({ open, card, columnTitle, canEdit }: Props) {
+type Details = Awaited<ReturnType<typeof getCardDetails>>;
+
+export function CardModal({
+  open,
+  card,
+  columnTitle,
+  boardId,
+  boardLabels,
+  canEdit,
+}: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
   const [pending, startTransition] = useTransition();
   const [confirmDelete, setConfirmDelete] = useState(false);
 
-  // Локальные черновики (description редактируется как textarea с превью)
+  const [details, setDetails] = useState<Details | null>(null);
   const [editingDesc, setEditingDesc] = useState(false);
   const [desc, setDesc] = useState(card?.description ?? "");
+
+  // Подтянуть детали (чек-листы, комменты) при открытии
+  useEffect(() => {
+    if (!card?.id || !open) {
+      setDetails(null);
+      return;
+    }
+    let cancelled = false;
+    getCardDetails(card.id).then((d) => {
+      if (!cancelled) setDetails(d);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [card?.id, open]);
 
   useEffect(() => {
     setDesc(card?.description ?? "");
@@ -94,10 +144,15 @@ export function CardModal({ open, card, columnTitle, canEdit }: Props) {
     });
   }
 
+  function refreshDetails() {
+    if (!card) return;
+    getCardDetails(card.id).then(setDetails);
+  }
+
   return (
     <>
       <Dialog open={open} onOpenChange={(o) => !o && close()}>
-        <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-3xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle asChild>
               <div>
@@ -120,8 +175,16 @@ export function CardModal({ open, card, columnTitle, canEdit }: Props) {
             </DialogTitle>
           </DialogHeader>
 
-          <div className="grid grid-cols-1 md:grid-cols-[1fr_180px] gap-6 mt-2">
-            <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-6 mt-2">
+            <div className="space-y-6 min-w-0">
+              <CardLabelsPopover
+                cardId={card.id}
+                boardId={boardId}
+                cardLabels={card.labels}
+                boardLabels={boardLabels}
+                canEdit={canEdit}
+              />
+
               <section>
                 <h3 className="text-xs uppercase tracking-wider text-muted-foreground mb-2">
                   Описание
@@ -174,14 +237,32 @@ export function CardModal({ open, card, columnTitle, canEdit }: Props) {
                 )}
               </section>
 
-              {/* Метки/чек-листы/комментарии — фаза 5 */}
-              <section className="text-xs text-muted-foreground italic">
-                Метки, чек-листы, комментарии — появятся в следующей фазе.
-              </section>
+              {details ? (
+                <ChecklistsSection
+                  cardId={card.id}
+                  checklists={details.checklists}
+                  canEdit={canEdit}
+                  onChange={refreshDetails}
+                />
+              ) : null}
+
+              {details ? (
+                <CommentsSection
+                  cardId={card.id}
+                  comments={details.comments}
+                  currentUserId={details.currentUserId}
+                  canEdit={canEdit}
+                  onChange={refreshDetails}
+                />
+              ) : null}
             </div>
 
             <aside className="space-y-3">
-              <DueButton dueDate={card.dueDate} onChange={setDue} disabled={!canEdit} />
+              <DueButton
+                dueDate={card.dueDate}
+                onChange={setDue}
+                disabled={!canEdit}
+              />
               {canEdit ? (
                 <>
                   <Button
@@ -248,6 +329,497 @@ export function CardModal({ open, card, columnTitle, canEdit }: Props) {
     </>
   );
 }
+
+// =====================================================================
+// Чек-листы
+// =====================================================================
+
+type Checklist = Details["checklists"][number];
+
+function ChecklistsSection({
+  cardId,
+  checklists,
+  canEdit,
+  onChange,
+}: {
+  cardId: string;
+  checklists: Checklist[];
+  canEdit: boolean;
+  onChange: () => void;
+}) {
+  const router = useRouter();
+  const [pending, startTransition] = useTransition();
+  const [adding, setAdding] = useState(false);
+  const [title, setTitle] = useState("");
+
+  function add() {
+    const t = title.trim();
+    if (!t) {
+      setAdding(false);
+      return;
+    }
+    startTransition(async () => {
+      const r = await createChecklist(cardId, t);
+      if (!r.ok) toast.error(r.error);
+      else {
+        setTitle("");
+        setAdding(false);
+        onChange();
+        router.refresh();
+      }
+    });
+  }
+
+  return (
+    <section>
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+          <CheckSquare className="size-3" /> Чек-листы
+        </h3>
+        {canEdit && !adding ? (
+          <Button size="sm" variant="ghost" onClick={() => setAdding(true)}>
+            + Добавить чек-лист
+          </Button>
+        ) : null}
+      </div>
+
+      {adding ? (
+        <div className="space-y-2 mb-3">
+          <input
+            autoFocus
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") add();
+              if (e.key === "Escape") {
+                setAdding(false);
+                setTitle("");
+              }
+            }}
+            placeholder="Название чек-листа"
+            className="w-full bg-background border-b border-ring outline-none px-1 py-1 text-sm"
+            disabled={pending}
+          />
+          <div className="flex gap-2">
+            <Button size="sm" onClick={add} disabled={pending}>
+              Создать
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => {
+                setAdding(false);
+                setTitle("");
+              }}
+            >
+              Отмена
+            </Button>
+          </div>
+        </div>
+      ) : null}
+
+      <div className="space-y-4">
+        {checklists.map((cl) => (
+          <ChecklistView
+            key={cl.id}
+            checklist={cl}
+            canEdit={canEdit}
+            onChange={onChange}
+          />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function ChecklistView({
+  checklist,
+  canEdit,
+  onChange,
+}: {
+  checklist: Checklist;
+  canEdit: boolean;
+  onChange: () => void;
+}) {
+  const router = useRouter();
+  const [pending, startTransition] = useTransition();
+  const [adding, setAdding] = useState(false);
+  const [text, setText] = useState("");
+
+  const total = checklist.items.length;
+  const done = checklist.items.filter((i) => i.done).length;
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+
+  function addItem() {
+    const t = text.trim();
+    if (!t) {
+      setAdding(false);
+      return;
+    }
+    startTransition(async () => {
+      const r = await addChecklistItem(checklist.id, t);
+      if (!r.ok) toast.error(r.error);
+      else {
+        setText("");
+        onChange();
+        router.refresh();
+      }
+    });
+  }
+
+  function toggle(itemId: string) {
+    startTransition(async () => {
+      const r = await toggleChecklistItem(itemId);
+      if (!r.ok) toast.error(r.error);
+      else {
+        onChange();
+        router.refresh();
+      }
+    });
+  }
+
+  function removeItem(itemId: string) {
+    startTransition(async () => {
+      const r = await deleteChecklistItem(itemId);
+      if (!r.ok) toast.error(r.error);
+      else {
+        onChange();
+        router.refresh();
+      }
+    });
+  }
+
+  function removeChecklist() {
+    startTransition(async () => {
+      const r = await deleteChecklist(checklist.id);
+      if (!r.ok) toast.error(r.error);
+      else {
+        onChange();
+        router.refresh();
+      }
+    });
+  }
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-1.5">
+        <h4 className="font-display text-base tracking-tight">
+          {checklist.title}
+        </h4>
+        {canEdit ? (
+          <button
+            type="button"
+            disabled={pending}
+            onClick={removeChecklist}
+            className="text-xs text-muted-foreground hover:text-destructive"
+          >
+            удалить
+          </button>
+        ) : null}
+      </div>
+
+      <div className="flex items-center gap-2 mb-2 text-xs text-muted-foreground">
+        <span className="font-mono">
+          {done}/{total}
+        </span>
+        <div className="flex-1 h-1 rounded-full bg-muted overflow-hidden">
+          <div
+            className="h-full bg-emerald-500 transition-all"
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+        <span className="font-mono w-8 text-right">{pct}%</span>
+      </div>
+
+      <ul className="space-y-1">
+        {checklist.items.map((it) => (
+          <li
+            key={it.id}
+            className="flex items-center gap-2 group rounded px-1 -mx-1 hover:bg-muted/40"
+          >
+            <Checkbox
+              checked={it.done}
+              disabled={!canEdit || pending}
+              onCheckedChange={() => toggle(it.id)}
+            />
+            <span
+              className={`flex-1 text-sm ${
+                it.done ? "line-through text-muted-foreground" : ""
+              }`}
+            >
+              {it.text}
+            </span>
+            {canEdit ? (
+              <button
+                type="button"
+                onClick={() => removeItem(it.id)}
+                className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-opacity"
+                aria-label="Удалить пункт"
+              >
+                <X className="size-3.5" />
+              </button>
+            ) : null}
+          </li>
+        ))}
+      </ul>
+
+      {canEdit ? (
+        <div className="mt-2">
+          {adding ? (
+            <div className="space-y-2">
+              <input
+                autoFocus
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") addItem();
+                  if (e.key === "Escape") {
+                    setAdding(false);
+                    setText("");
+                  }
+                }}
+                placeholder="Новый пункт"
+                className="w-full bg-background border-b border-ring outline-none px-1 py-1 text-sm"
+                disabled={pending}
+              />
+              <div className="flex gap-2">
+                <Button size="sm" onClick={addItem} disabled={pending}>
+                  Добавить
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => {
+                    setAdding(false);
+                    setText("");
+                  }}
+                >
+                  Отмена
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <Button
+              size="sm"
+              variant="ghost"
+              className="text-muted-foreground"
+              onClick={() => setAdding(true)}
+            >
+              + пункт
+            </Button>
+          )}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+// =====================================================================
+// Комментарии
+// =====================================================================
+
+type Comment = Details["comments"][number];
+
+function CommentsSection({
+  cardId,
+  comments,
+  currentUserId,
+  canEdit,
+  onChange,
+}: {
+  cardId: string;
+  comments: Comment[];
+  currentUserId: string;
+  canEdit: boolean;
+  onChange: () => void;
+}) {
+  const router = useRouter();
+  const [pending, startTransition] = useTransition();
+  const [body, setBody] = useState("");
+
+  function send() {
+    const v = body.trim();
+    if (!v) return;
+    startTransition(async () => {
+      const r = await createComment(cardId, v);
+      if (!r.ok) toast.error(r.error);
+      else {
+        setBody("");
+        onChange();
+        router.refresh();
+      }
+    });
+  }
+
+  return (
+    <section>
+      <h3 className="text-xs uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-2">
+        <MessageSquare className="size-3" /> Комментарии
+      </h3>
+
+      {canEdit ? (
+        <div className="mb-4 space-y-2">
+          <Textarea
+            value={body}
+            onChange={(e) => setBody(e.target.value)}
+            rows={2}
+            placeholder="Markdown поддерживается. Cmd/Ctrl+Enter — отправить."
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                e.preventDefault();
+                send();
+              }
+            }}
+            disabled={pending}
+          />
+          <div className="flex justify-end">
+            <Button size="sm" onClick={send} disabled={pending || !body.trim()}>
+              Отправить
+            </Button>
+          </div>
+        </div>
+      ) : null}
+
+      <ul className="space-y-3">
+        {comments.map((c) => (
+          <CommentItem
+            key={c.id}
+            comment={c}
+            isAuthor={c.authorId === currentUserId}
+            onChange={onChange}
+          />
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+function CommentItem({
+  comment,
+  isAuthor,
+  onChange,
+}: {
+  comment: Comment;
+  isAuthor: boolean;
+  onChange: () => void;
+}) {
+  const router = useRouter();
+  const [pending, startTransition] = useTransition();
+  const [editing, setEditing] = useState(false);
+  const [body, setBody] = useState(comment.body);
+
+  const initials = (comment.author?.name || comment.author?.email || "?")
+    .split(/\s+/)
+    .map((s) => s[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
+  function save() {
+    startTransition(async () => {
+      const r = await updateComment(comment.id, body);
+      if (!r.ok) toast.error(r.error);
+      else {
+        setEditing(false);
+        onChange();
+        router.refresh();
+      }
+    });
+  }
+
+  function remove() {
+    startTransition(async () => {
+      const r = await deleteComment(comment.id);
+      if (!r.ok) toast.error(r.error);
+      else {
+        onChange();
+        router.refresh();
+      }
+    });
+  }
+
+  return (
+    <li className="flex gap-3">
+      <Avatar className="size-7 mt-0.5">
+        {comment.author?.image ? (
+          <AvatarImage src={comment.author.image} alt="" />
+        ) : null}
+        <AvatarFallback className="text-[10px]">{initials}</AvatarFallback>
+      </Avatar>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-baseline gap-2 mb-0.5">
+          <span className="text-sm font-medium">
+            {comment.author?.name || comment.author?.email || "Удалён"}
+          </span>
+          <span
+            className="text-xs text-muted-foreground"
+            suppressHydrationWarning
+          >
+            {formatDistanceToNow(comment.createdAt, {
+              addSuffix: true,
+              locale: ru,
+            })}
+          </span>
+        </div>
+        {editing ? (
+          <div className="space-y-2">
+            <Textarea
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
+              rows={3}
+              autoFocus
+            />
+            <div className="flex gap-2">
+              <Button size="sm" onClick={save} disabled={pending}>
+                Сохранить
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => {
+                  setEditing(false);
+                  setBody(comment.body);
+                }}
+              >
+                Отмена
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="prose prose-sm dark:prose-invert max-w-none">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {comment.body}
+              </ReactMarkdown>
+            </div>
+            {isAuthor ? (
+              <div className="flex gap-3 mt-1 text-xs text-muted-foreground">
+                <button
+                  type="button"
+                  onClick={() => setEditing(true)}
+                  className="hover:text-foreground"
+                >
+                  изменить
+                </button>
+                <button
+                  type="button"
+                  onClick={remove}
+                  className="hover:text-destructive"
+                >
+                  удалить
+                </button>
+              </div>
+            ) : null}
+          </>
+        )}
+      </div>
+    </li>
+  );
+}
+
+// =====================================================================
+// Дедлайн
+// =====================================================================
 
 function DueButton({
   dueDate,

@@ -1,17 +1,27 @@
 "use client";
 
+import { useParams } from "next/navigation";
 import { useMemo } from "react";
 
 import { CardModal } from "./card-modal";
-import type { ColumnView } from "./types";
+import type { ColumnView, LabelView } from "./types";
 
 type Props = {
   openCardId: string | null;
   columns: ColumnView[];
+  boardLabels: LabelView[];
   canEdit: boolean;
 };
 
-export function CardModalLoader({ openCardId, columns, canEdit }: Props) {
+export function CardModalLoader({
+  openCardId,
+  columns,
+  boardLabels,
+  canEdit,
+}: Props) {
+  const params = useParams<{ boardId: string }>();
+  const boardId = params.boardId ?? "";
+
   const found = useMemo(() => {
     if (!openCardId) return null;
     for (const col of columns) {
@@ -26,6 +36,8 @@ export function CardModalLoader({ openCardId, columns, canEdit }: Props) {
       open={!!found}
       card={found?.card ?? null}
       columnTitle={found?.columnTitle}
+      boardId={boardId}
+      boardLabels={boardLabels}
       canEdit={canEdit}
     />
   );

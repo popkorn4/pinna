@@ -6,6 +6,7 @@ import { ru } from "date-fns/locale";
 import { AlignLeft } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { labelHex } from "@/lib/labels";
 import type { CardView } from "./types";
 
 type Props = {
@@ -34,6 +35,28 @@ export function CardPreview({ card, isDragging }: Props) {
         isDragging && "opacity-40",
       )}
     >
+      {card.labels.length > 0 ? (
+        <div className="flex flex-wrap gap-1 mb-2">
+          {card.labels.map((l) => (
+            <span
+              key={l.id}
+              className="h-1.5 rounded-full"
+              style={{
+                background: labelHex(l.color),
+                width: l.name ? "auto" : "32px",
+                minWidth: "32px",
+              }}
+              title={l.name || undefined}
+            >
+              {l.name ? (
+                <span className="block text-[10px] leading-none px-1.5 py-0.5 text-white font-medium">
+                  {l.name}
+                </span>
+              ) : null}
+            </span>
+          ))}
+        </div>
+      ) : null}
       <h4 className="font-medium text-sm leading-snug line-clamp-3">
         {card.title}
       </h4>

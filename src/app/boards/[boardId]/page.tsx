@@ -6,7 +6,7 @@ import { CardModalLoader } from "@/components/board/card-modal-loader";
 import { requireUser } from "@/lib/auth";
 import { NotFoundError, canMutateContent } from "@/lib/auth/permissions";
 import { getBoard } from "@/server/board-actions";
-import type { ColumnView } from "@/components/board/types";
+import type { ColumnView, LabelView } from "@/components/board/types";
 
 type Props = {
   params: Promise<{ boardId: string }>;
@@ -41,8 +41,10 @@ export default async function BoardPage({ params, searchParams }: Props) {
       position: card.position,
       dueDate: card.dueDate,
       assignee: card.assignee,
+      labels: card.labels.map((cl) => cl.label),
     })),
   }));
+  const boardLabels: LabelView[] = board.labels;
 
   return (
     <div className="min-h-dvh flex flex-col">
@@ -50,7 +52,9 @@ export default async function BoardPage({ params, searchParams }: Props) {
         user={user}
         board={{ id: board.id, title: board.title }}
         members={board.members}
+        labels={boardLabels}
         canEdit={role === "OWNER"}
+        canMutate={canEdit}
       />
 
       <main className="flex-1 overflow-x-auto overflow-y-hidden">
@@ -64,6 +68,7 @@ export default async function BoardPage({ params, searchParams }: Props) {
       <CardModalLoader
         openCardId={openCardId ?? null}
         columns={columns}
+        boardLabels={boardLabels}
         canEdit={canEdit}
       />
     </div>

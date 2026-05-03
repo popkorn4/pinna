@@ -77,6 +77,48 @@ async function getColumnBoard(columnId: string): Promise<{ boardId: string }> {
   return col;
 }
 
+// Полные детали карточки для модалки (чек-листы, комменты).
+// почему отдельный запрос: на каждый рендер доски тащить все чек-листы
+// и комменты — расточительно. Грузим только при открытии модалки.
+export async function getCardDetails(cardId: string) {
+  const user = await requireUser();
+  const card = await prisma.card.findUnique({
+    where: { id: cardId },
+    include: {
+      column: { select: { boardId: true } },
+      checklists: {
+        orderBy: { position: "asc" },
+        include: {
+          items: {
+            orderBy: { position: "asc" },
+          },
+        },
+      },
+      comments: {
+        orderBy: { createdAt: "desc" },
+        include: {
+          author: {
+            select: { id: true, name: true, email: true, image: true },
+          },
+        },
+      },
+      createdBy: {
+        select: { id: true, name: true, email: true, image: true },
+      },
+    },
+  });
+  if (!card) throw new NotFoundError();
+  await assertBoardAccess(user.id, card.column.boardId);
+  return {
+    cardId,
+    currentUserId: user.id,
+    checklists: card.checklists,
+    comments: card.comments,
+    createdAt: card.createdAt,
+    createdBy: card.createdBy,
+  };
+}
+
 async function getCardBoard(
   cardId: string,
 ): Promise<{ boardId: string; columnId: string; position: number }> {

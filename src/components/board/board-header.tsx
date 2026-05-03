@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UserMenu } from "@/components/user-menu";
 import { InlineTextEdit } from "@/components/board/inline-text-edit";
+import { BoardLabelsPopover } from "@/components/board/board-labels-popover";
+import type { LabelView } from "@/components/board/types";
 import { boardAccent } from "@/lib/colors";
 import { updateBoard } from "@/server/board-actions";
 
@@ -26,10 +28,19 @@ type Props = {
   user: { name?: string | null; email?: string | null; image?: string | null };
   board: { id: string; title: string };
   members: Member[];
+  labels: LabelView[];
   canEdit: boolean;
+  canMutate: boolean;
 };
 
-export function BoardHeader({ user, board, members, canEdit }: Props) {
+export function BoardHeader({
+  user,
+  board,
+  members,
+  labels,
+  canEdit,
+  canMutate,
+}: Props) {
   const router = useRouter();
   return (
     <header className="border-b border-border/60">
@@ -66,6 +77,11 @@ export function BoardHeader({ user, board, members, canEdit }: Props) {
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <MemberStack members={members} />
+          <BoardLabelsPopover
+            boardId={board.id}
+            labels={labels}
+            canMutate={canMutate}
+          />
           <Button variant="outline" size="sm" disabled>
             <Users className="size-4" /> Поделиться
           </Button>
