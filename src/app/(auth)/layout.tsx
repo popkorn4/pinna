@@ -1,0 +1,22 @@
+import Link from "next/link";
+
+import { ThemeToggle } from "@/components/theme-toggle";
+
+export default function AuthLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="min-h-dvh flex flex-col">
+      <header className="flex items-center justify-between px-6 md:px-12 py-6">
+        <Link href="/" className="font-display text-2xl tracking-tight">
+          Доска
+        </Link>
+        <ThemeToggle />
+      </header>
+      <main className="flex-1 grid place-items-center px-6 py-10">
+        <div className="w-full max-w-md">{children}</div>
+      </main>
+      <footer className="px-6 md:px-12 py-6 text-xs text-muted-foreground text-center">
+        © {new Date().getFullYear()} Доска
+      </footer>
+    </div>
+  );
+}
