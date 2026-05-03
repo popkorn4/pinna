@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronLeft } from "lucide-react";
+import { BarChart3, ChevronLeft } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ import { BoardLabelsPopover } from "@/components/board/board-labels-popover";
 import { ShareDialog } from "@/components/board/share-dialog";
 import { ActivityPanel } from "@/components/board/activity-panel";
 import { BoardExportButton } from "@/components/board/board-export-button";
+import { BoardViewSwitcher } from "@/components/board/board-view-switcher";
 import { AiPanel } from "@/components/board/ai-panel";
 import type { LabelView } from "@/components/board/types";
 import { boardAccent } from "@/lib/colors";
@@ -42,6 +43,7 @@ type Props = {
   myRole: BoardRole;
   canEdit: boolean;
   canMutate: boolean;
+  view?: "kanban" | "calendar";
 };
 
 export function BoardHeader({
@@ -52,6 +54,7 @@ export function BoardHeader({
   myRole,
   canEdit,
   canMutate,
+  view = "kanban",
 }: Props) {
   const router = useRouter();
   return (
@@ -88,6 +91,7 @@ export function BoardHeader({
           />
         </div>
         <div className="flex items-center gap-2 shrink-0">
+          <BoardViewSwitcher boardId={board.id} view={view} />
           <MemberStack members={members} />
           <BoardLabelsPopover
             boardId={board.id}
@@ -98,6 +102,11 @@ export function BoardHeader({
             boardId={board.id}
             members={members.map((m) => m.user)}
           />
+          <Button asChild variant="outline" size="sm">
+            <Link href={`/boards/${board.id}/analytics`}>
+              <BarChart3 className="size-4" /> Аналитика
+            </Link>
+          </Button>
           <BoardExportButton boardId={board.id} boardTitle={board.title} />
           <ShareDialog
             boardId={board.id}

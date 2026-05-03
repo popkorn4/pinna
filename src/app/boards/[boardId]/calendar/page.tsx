@@ -1,8 +1,7 @@
 import { notFound } from "next/navigation";
 
 import { BoardHeader } from "@/components/board/board-header";
-import { BoardDnd } from "@/components/board/board-dnd";
-import { BoardRealtime } from "@/components/board/board-realtime";
+import { CalendarView } from "@/components/board/calendar-view";
 import { CardModalLoader } from "@/components/board/card-modal-loader";
 import { requireUser } from "@/lib/auth";
 import {
@@ -11,16 +10,17 @@ import {
   canReportProgress,
 } from "@/lib/auth/permissions";
 import { getBoard } from "@/server/board-actions";
+import { listCalendarCards } from "@/server/calendar-actions";
 import type { ColumnView, LabelView } from "@/components/board/types";
 
 type Props = {
   params: Promise<{ boardId: string }>;
-  searchParams: Promise<{ card?: string }>;
+  searchParams: Promise<{ card?: string; m?: string }>;
 };
 
-export default async function BoardPage({ params, searchParams }: Props) {
+export default async function BoardCalendarPage({ params, searchParams }: Props) {
   const { boardId } = await params;
-  const { card: openCardId } = await searchParams;
+  const { card: openCardId, m: monthParam } = await searchParams;
   const user = await requireUser();
 
   let data;
@@ -30,12 +30,13 @@ export default async function BoardPage({ params, searchParams }: Props) {
     if (e instanceof NotFoundError) notFound();
     throw e;
   }
-
   const { board, role } = data;
   const canEdit = canMutateContent(role);
   const canReport = canReportProgress(role);
 
-  // Маппим в чистый сериализуемый вид (Date оставляем — RSC сериализует)
+  const cards = await listCalendarCards(board.id);
+
+  // Колонки и метки нужны для CardModalLoader
   const columns: ColumnView[] = board.columns.map((c) => ({
     id: c.id,
     title: c.title,
@@ -62,17 +63,16 @@ export default async function BoardPage({ params, searchParams }: Props) {
         myRole={role}
         canEdit={role === "OWNER"}
         canMutate={canEdit}
-        view="kanban"
+        view="calendar"
       />
-
-      <main className="flex-1 overflow-x-auto overflow-y-hidden">
-        <BoardDnd
+      <main className="flex-1 px-4 md:px-8 py-6">
+        <CalendarView
           boardId={board.id}
-          initialColumns={columns}
+          cards={cards}
+          monthParam={monthParam}
           canEdit={canEdit}
         />
       </main>
-
       <CardModalLoader
         openCardId={openCardId ?? null}
         columns={columns}
@@ -80,8 +80,6 @@ export default async function BoardPage({ params, searchParams }: Props) {
         canEdit={canEdit}
         canReport={canReport}
       />
-
-      <BoardRealtime boardId={board.id} />
     </div>
   );
 }

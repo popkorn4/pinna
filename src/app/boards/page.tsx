@@ -4,6 +4,7 @@ import { ru } from "date-fns/locale";
 
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UserMenu } from "@/components/user-menu";
+import { GlobalSearchTrigger } from "@/components/global-search";
 import { BoardCreateDialog } from "@/components/board/board-create-dialog";
 import { BoardCardActions } from "@/components/board/board-card-actions";
 import { requireUser } from "@/lib/auth";
@@ -30,6 +31,7 @@ export default async function BoardsPage() {
           <span className="size-1.5 rounded-full bg-brand" aria-hidden />
         </Link>
         <div className="flex items-center gap-2">
+          <GlobalSearchTrigger />
           <ThemeToggle />
           <UserMenu user={user} />
         </div>

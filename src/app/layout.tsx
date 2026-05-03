@@ -5,6 +5,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
+import { GlobalSearch } from "@/components/global-search";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -47,6 +48,7 @@ export default function RootLayout({
         >
           <TooltipProvider delayDuration={300}>
             {children}
+            <GlobalSearch />
             <Toaster richColors position="top-right" />
           </TooltipProvider>
         </ThemeProvider>
