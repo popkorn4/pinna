@@ -1,0 +1,27 @@
+# Локальный Postgres для разработки.
+# Используется только если выбран Docker-вариант (вместо Postgres.app).
+# Порт 5433, чтобы не конфликтовать с системным Postgres / Postgres.app на 5432.
+# Если стартуешь — обнови DATABASE_URL в .env.local на:
+#   postgresql://kanban:kanban@localhost:5433/kanban_dev
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: kanban-postgres
+    restart: unless-stopped
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: kanban
+      POSTGRES_PASSWORD: kanban
+      POSTGRES_DB: kanban_dev
+    volumes:
+      - kanban_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kanban -d kanban_dev"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  kanban_pgdata:

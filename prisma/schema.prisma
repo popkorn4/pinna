@@ -1,0 +1,363 @@
+// Prisma schema для Kanban-приложения.
+// Запускать миграции: npx prisma migrate dev --name <название>
+// Сгенерировать клиент: npx prisma generate
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================
+// Перечисления
+// ============================================================
+
+enum BoardRole {
+  OWNER
+  MEMBER
+  VIEWER
+}
+
+enum AiMessageRole {
+  USER
+  ASSISTANT
+  TOOL
+}
+
+enum PendingActionStatus {
+  PENDING
+  APPLIED
+  REJECTED
+}
+
+// ============================================================
+// Auth.js (NextAuth) модели
+// ============================================================
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  passwordHash  String? // null у OAuth-пользователей
+  image         String?
+  emailVerified DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts          Account[]
+  sessions          Session[]
+  ownedBoards       Board[]            @relation("BoardOwner")
+  memberships       BoardMember[]
+  createdCards      Card[]             @relation("CardCreator")
+  assignedCards     Card[]             @relation("CardAssignee")
+  comments          Comment[]
+  activities        Activity[]
+  aiConversations   AiConversation[]
+  pendingAiActions  PendingAiAction[]
+  sentInvites       BoardInvite[]      @relation("InviteAuthor")
+}
+
+// Стандартная Account-модель Auth.js (OAuth).
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  // почему: при удалении пользователя — каскадно сносим его OAuth-аккаунты
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  // почему: каскад — при удалении юзера ликвидируем активные сессии
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ============================================================
+// Доска и членство
+// ============================================================
+
+model Board {
+  id          String    @id @default(cuid())
+  title       String
+  description String?
+  ownerId     String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  archivedAt  DateTime?
+
+  // почему: владелец сохраняется как обычный FK; членство дублируется в BoardMember,
+  // но связь нужна, чтобы быстро находить доски по владельцу и для каскадов
+  owner    User           @relation("BoardOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  members  BoardMember[]
+  columns  Column[]
+  labels   Label[]
+  invites  BoardInvite[]
+  activities Activity[]
+  conversations AiConversation[]
+  pendingActions PendingAiAction[]
+
+  // почему: списки досок часто фильтруются по архивности
+  @@index([ownerId])
+  @@index([archivedAt])
+}
+
+model BoardMember {
+  id       String    @id @default(cuid())
+  boardId  String
+  userId   String
+  role     BoardRole @default(MEMBER)
+  joinedAt DateTime  @default(now())
+
+  board Board @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // почему: пользователь не может быть дважды добавлен на одну доску
+  @@unique([boardId, userId])
+  @@index([userId])
+}
+
+model BoardInvite {
+  id           String    @id @default(cuid())
+  boardId      String
+  email        String
+  role         BoardRole @default(MEMBER)
+  token        String    @unique
+  invitedById  String
+  createdAt    DateTime  @default(now())
+  expiresAt    DateTime
+  acceptedAt   DateTime?
+
+  board     Board @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  invitedBy User  @relation("InviteAuthor", fields: [invitedById], references: [id], onDelete: Cascade)
+
+  @@index([boardId])
+  @@index([email])
+}
+
+// ============================================================
+// Колонки и карточки
+// ============================================================
+
+model Column {
+  id        String   @id @default(cuid())
+  boardId   String
+  title     String
+  // почему: float, чтобы вставлять между колонками без перенумерации
+  position  Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  board Board  @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  cards Card[]
+
+  // почему: колонки доски всегда грузятся вместе, нужен быстрый order by
+  @@index([boardId, position])
+}
+
+model Card {
+  id          String    @id @default(cuid())
+  columnId    String
+  title       String
+  description String?   @db.Text
+  // почему: float — та же причина, что и у колонок
+  position    Float
+  dueDate     DateTime?
+  // почему: createdById nullable — при удалении автора карточка остаётся,
+  // но связь обнуляется (SetNull). Для сохранения истории команды
+  createdById String?
+  assigneeId  String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  archivedAt  DateTime?
+
+  column     Column        @relation(fields: [columnId], references: [id], onDelete: Cascade)
+  createdBy  User?         @relation("CardCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  assignee   User?         @relation("CardAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+  labels     CardLabel[]
+  checklists Checklist[]
+  comments   Comment[]
+  activities Activity[]
+
+  // почему: карточки в колонке упорядочены по position
+  @@index([columnId, position])
+  // почему: запросы вида "мои просроченные карточки" должны быть быстрыми
+  @@index([dueDate])
+  @@index([assigneeId])
+}
+
+// ============================================================
+// Метки
+// ============================================================
+
+model Label {
+  id       String      @id @default(cuid())
+  boardId  String
+  name     String
+  // почему: цвет хранится строкой (имя из палитры или hex), чтобы не плодить enum
+  color    String
+  position Int         @default(0)
+
+  board Board       @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  cards CardLabel[]
+
+  @@index([boardId])
+}
+
+model CardLabel {
+  cardId  String
+  labelId String
+
+  card  Card  @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  label Label @relation(fields: [labelId], references: [id], onDelete: Cascade)
+
+  // почему: composite PK для many-to-many без лишнего id
+  @@id([cardId, labelId])
+  @@index([labelId])
+}
+
+// ============================================================
+// Чек-листы
+// ============================================================
+
+model Checklist {
+  id       String          @id @default(cuid())
+  cardId   String
+  title    String
+  position Int             @default(0)
+
+  card  Card            @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  items ChecklistItem[]
+
+  @@index([cardId])
+}
+
+model ChecklistItem {
+  id          String   @id @default(cuid())
+  checklistId String
+  text        String
+  done        Boolean  @default(false)
+  position    Int      @default(0)
+
+  checklist Checklist @relation(fields: [checklistId], references: [id], onDelete: Cascade)
+
+  @@index([checklistId])
+}
+
+// ============================================================
+// Комментарии
+// ============================================================
+
+model Comment {
+  id        String   @id @default(cuid())
+  cardId    String
+  authorId  String?
+  body      String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  card   Card  @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  // почему: при удалении автора комментарий остаётся, авторство сбрасывается
+  author User? @relation(fields: [authorId], references: [id], onDelete: SetNull)
+
+  @@index([cardId, createdAt])
+}
+
+// ============================================================
+// Активность
+// ============================================================
+
+model Activity {
+  id        String   @id @default(cuid())
+  boardId   String
+  cardId    String?
+  userId    String?
+  type      String
+  // почему: payload — Json, чтобы не плодить таблицы под каждое событие
+  payload   Json
+  createdAt DateTime @default(now())
+
+  board Board @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  card  Card? @relation(fields: [cardId], references: [id], onDelete: SetNull)
+  user  User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  // почему: лента доски — главный запрос, нужен индекс по boardId + сортировка desc
+  @@index([boardId, createdAt(sort: Desc)])
+  @@index([cardId, createdAt(sort: Desc)])
+}
+
+// ============================================================
+// AI-агент (фаза 7)
+// ============================================================
+
+model AiConversation {
+  id        String   @id @default(cuid())
+  userId    String
+  boardId   String
+  title     String   @default("Новый разговор")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user     User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  board    Board       @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  messages AiMessage[]
+
+  @@index([userId, boardId])
+}
+
+model AiMessage {
+  id             String        @id @default(cuid())
+  conversationId String
+  role           AiMessageRole
+  content        String        @db.Text
+  toolCalls      Json?
+  toolResults    Json?
+  createdAt      DateTime      @default(now())
+
+  conversation AiConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+}
+
+model PendingAiAction {
+  id        String              @id @default(cuid())
+  userId    String
+  boardId   String
+  // почему: action — Json (имя tool + аргументы); хендлер по статусу решает что делать
+  action    Json
+  status    PendingActionStatus @default(PENDING)
+  createdAt DateTime            @default(now())
+  expiresAt DateTime
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  board Board @relation(fields: [boardId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+  @@index([boardId, status])
+}
