@@ -42,7 +42,7 @@ prisma/
 ```
 
 ## Текущая фаза
-Фаза 2 завершена. Следующая — фаза 3 (доски и колонки).
+Фаза 3 завершена. Следующая — фаза 4 (карточки и DnD).
 
 ## Технические заметки окружения
 - Postgres локально через **Postgres.app** (не Docker). Пользователь — `petrun`, без пароля. База — `kanban_dev` на порту `5432`.
@@ -64,3 +64,4 @@ prisma/
 - **Фаза 0** (создание контекста): создан CLAUDE.md, инициализирован git-репозиторий.
 - **Фаза 1** (скелет): Next.js 16 + Tailwind v4 + shadcn (radix/nova), Prisma 6 + Postgres.app, схема БД (15 моделей, миграция `init`), синглтон `lib/db/prisma.ts`, `next-themes` + переключатель тем, шрифты Geist + Fraunces, минималистичный лендинг.
 - **Фаза 2** (аутентификация): Auth.js v5 (Credentials, JWT-стратегия — Google OAuth решили отложить); хелперы `hashPassword`/`verifyPassword` (bcrypt cost 12); `getCurrentUser`/`requireUser` через React `cache`; middleware защищает `/boards` и `/api/boards`; страницы `/login` и `/register` с RHF + Zod, дефолтная доска «Мои задачи» с тремя колонками создаётся при регистрации; UserMenu с logout. Email enumeration защищён только на /login (на регистрации показываем «email занят» осознанно, ради UX).
+- **Фаза 3** (доски и колонки): permissions с иерархией ролей (OWNER/MEMBER/VIEWER) + 3 юнит-теста; Server Actions для досок (CRUD + archive) и колонок (create/update/delete/reorder); страница /boards в виде «оглавления журнала» (список с цветной полоской, мета по колонкам/карточкам/времени); страница доски с инлайн-редактированием названия, горизонтальным скроллом колонок, добавлением колонки через inline composer. Константы position вынесены в `lib/position.ts` — в server-actions файлах разрешены только async-экспорты.
