@@ -15,9 +15,9 @@ export default async function HomePage() {
         <Link
           href="/"
           className="font-display text-2xl tracking-tight inline-flex items-baseline gap-1"
-          aria-label="Канва"
+          aria-label="Plume"
         >
-          Канва
+          Plume
           <span
             className="size-1.5 rounded-full bg-brand"
             aria-hidden
@@ -115,7 +115,7 @@ export default async function HomePage() {
       </main>
 
       <footer className="px-6 md:px-12 py-8 border-t border-border/60 text-xs text-muted-foreground flex justify-between">
-        <span>© {new Date().getFullYear()} Канва</span>
+        <span>© {new Date().getFullYear()} Plume</span>
         <span className="font-mono">localhost</span>
       </footer>
     </div>

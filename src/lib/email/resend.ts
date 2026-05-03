@@ -37,7 +37,7 @@ export async function sendBoardInvite(
         text: [
           `Привет!`,
           ``,
-          `${params.inviterName} приглашает вас присоединиться к доске «${params.boardTitle}» в Канву (Kanban-планировщик).`,
+          `${params.inviterName} приглашает вас присоединиться к доске «${params.boardTitle}» в Plume (Kanban-планировщик).`,
           ``,
           `Принять приглашение:`,
           params.acceptUrl,

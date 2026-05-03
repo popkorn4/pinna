@@ -22,7 +22,7 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
-  title: "Канва — Kanban с AI-агентом",
+  title: "Plume — Kanban с AI-агентом",
   description:
     "Минималистичный планировщик с досками, карточками и помощником, который понимает текстовые команды.",
 };

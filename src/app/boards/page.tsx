@@ -21,7 +21,7 @@ export default async function BoardsPage() {
           href="/"
           className="font-display text-2xl tracking-tight inline-flex items-baseline gap-1"
         >
-          Канва
+          Plume
           <span className="size-1.5 rounded-full bg-brand" aria-hidden />
         </Link>
         <div className="flex items-center gap-2">
