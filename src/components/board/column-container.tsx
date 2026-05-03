@@ -5,11 +5,14 @@ import { useRouter } from "next/navigation";
 import { MoreHorizontal, Trash2, GripVertical } from "lucide-react";
 import { toast } from "sonner";
 import { useSortable } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-import {
-  SortableContext,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
+import { SortableContext } from "@dnd-kit/sortable";
+
+// Стратегия "ничего не делать": соседи не расступаются во время drag.
+// Карточка-overlay сама показывает, куда летит, а место вставки определяется
+// курсором при дропе (см. board-dnd.tsx onDragEnd: верх/низ половина).
+// почему: дефолтная verticalListSortingStrategy создавала ощущение "прыжков
+// через несколько позиций" из-за непрерывной переоценки displacement'а.
+const noopSortingStrategy = () => null;
 
 import {
   AlertDialog,
@@ -46,15 +49,7 @@ export function ColumnContainer({ column, canEdit }: Props) {
 
   // useSortable заодно даёт droppable для drag карточек поверх колонки.
   // type=column в data — чтобы BoardDnd различал перенос колонок и карточек.
-  const {
-    setNodeRef,
-    attributes,
-    listeners,
-    transform,
-    transition,
-    isDragging,
-    isOver,
-  } = useSortable({
+  const { setNodeRef, attributes, listeners, isDragging, isOver } = useSortable({
     id: column.id,
     data: { type: "column", columnId: column.id },
     disabled: !canEdit,
@@ -63,8 +58,7 @@ export function ColumnContainer({ column, canEdit }: Props) {
   return (
     <section
       ref={setNodeRef}
-      style={{ transform: CSS.Translate.toString(transform), transition }}
-      className={`w-80 shrink-0 rounded-lg border bg-card/40 flex flex-col max-h-full transition-colors ${
+      className={`w-80 shrink-0 rounded-lg border bg-card/40 flex flex-col max-h-full transition-colors duration-200 ${
         isOver ? "border-ring" : "border-border/60"
       } ${isDragging ? "opacity-40" : ""}`}
     >
@@ -127,7 +121,7 @@ export function ColumnContainer({ column, canEdit }: Props) {
       <div className="flex-1 px-2 py-2 space-y-2 overflow-y-auto min-h-32">
         <SortableContext
           items={column.cards.map((c) => c.id)}
-          strategy={verticalListSortingStrategy}
+          strategy={noopSortingStrategy}
         >
           {column.cards.length === 0 ? (
             <div className="text-xs text-muted-foreground text-center py-6">
