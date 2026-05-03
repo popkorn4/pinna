@@ -62,44 +62,95 @@ export function AnalyticsView({ analytics }: Props) {
           задачи накапливаются. Если наоборот — команда разбирает завалы.
         </p>
         <div className="rounded-lg border border-border/60 p-4 bg-card">
-          <ResponsiveContainer width="100%" height={250}>
-            <BarChart data={analytics.throughput}>
+          <div className="text-xs text-muted-foreground mb-2 flex items-center gap-4 flex-wrap">
+            <span className="inline-flex items-center gap-1.5">
+              <span
+                className="size-3 rounded-sm"
+                style={{ background: "hsl(200 60% 55%)" }}
+              />
+              Появилось
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <span
+                className="size-3 rounded-sm"
+                style={{ background: "hsl(140 50% 45%)" }}
+              />
+              Ушло в архив
+            </span>
+          </div>
+          <ResponsiveContainer width="100%" height={320}>
+            <BarChart
+              data={analytics.throughput}
+              margin={{ top: 10, right: 16, left: 8, bottom: 36 }}
+            >
               <CartesianGrid
                 strokeDasharray="3 3"
                 stroke="currentColor"
-                opacity={0.1}
+                opacity={0.12}
               />
               <XAxis
                 dataKey="week"
-                tick={{ fill: "currentColor", fontSize: 11 }}
+                tick={{ fill: "currentColor", fontSize: 13 }}
                 stroke="currentColor"
-                opacity={0.5}
+                opacity={0.7}
+                label={{
+                  value: "Начало недели",
+                  position: "insideBottom",
+                  offset: -22,
+                  style: {
+                    fill: "currentColor",
+                    fontSize: 12,
+                    opacity: 0.7,
+                  },
+                }}
               />
               <YAxis
-                tick={{ fill: "currentColor", fontSize: 11 }}
+                tick={{ fill: "currentColor", fontSize: 13 }}
                 stroke="currentColor"
-                opacity={0.5}
+                opacity={0.7}
                 allowDecimals={false}
+                label={{
+                  value: "Кол-во карточек",
+                  angle: -90,
+                  position: "insideLeft",
+                  offset: 14,
+                  style: {
+                    fill: "currentColor",
+                    fontSize: 12,
+                    opacity: 0.7,
+                    textAnchor: "middle",
+                  },
+                }}
               />
               <Tooltip
+                cursor={{ fill: "currentColor", opacity: 0.06 }}
                 contentStyle={{
                   background: "var(--card)",
                   border: "1px solid var(--border)",
                   borderRadius: 6,
-                  fontSize: 12,
+                  fontSize: 13,
                 }}
                 labelFormatter={(label) => `Неделя с ${label}`}
+                formatter={(value, name) => {
+                  const n = typeof value === "number" ? value : Number(value);
+                  return [`${n} ${n === 1 ? "карточка" : "карточек"}`, name];
+                }}
               />
-              <Legend wrapperStyle={{ fontSize: 12 }} />
+              <Legend
+                wrapperStyle={{ fontSize: 13, paddingTop: 8 }}
+                iconType="square"
+              />
               <Bar
                 dataKey="created"
-                name="Создано карточек"
+                name="Появилось"
                 fill="hsl(200 60% 55%)"
+                radius={[3, 3, 0, 0]}
               />
               <Bar
                 dataKey="archived"
                 name="Ушло в архив"
                 fill="hsl(140 50% 45%)"
+                radius={[3, 3, 0, 0]}
               />
             </BarChart>
           </ResponsiveContainer>

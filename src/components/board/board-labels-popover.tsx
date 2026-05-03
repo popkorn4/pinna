@@ -62,7 +62,7 @@ export function BoardLabelsPopover({ boardId, labels, canMutate }: Props) {
     <>
       <Popover>
         <PopoverTrigger asChild>
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="default">
             <Tag className="size-4" /> Метки
             <span className="font-mono text-xs text-muted-foreground">
               {labels.length}

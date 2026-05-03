@@ -79,7 +79,7 @@ export function ActivityPanel({ boardId, members }: Props) {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button variant="outline" size="sm">
+        <Button variant="outline" size="default">
           <ActivityIcon className="size-4" /> Активность
         </Button>
       </SheetTrigger>

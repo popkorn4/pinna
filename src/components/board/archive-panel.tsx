@@ -82,7 +82,7 @@ export function ArchivePanel({ boardId, canEdit }: Props) {
     <>
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetTrigger asChild>
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="default">
             <Archive className="size-4" /> Архив
           </Button>
         </SheetTrigger>

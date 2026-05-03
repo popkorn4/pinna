@@ -68,7 +68,7 @@ export function BoardExportButton({ boardId, boardTitle }: Props) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" disabled={pending}>
+        <Button variant="outline" size="default" disabled={pending}>
           <Download className="size-4" /> Экспорт
         </Button>
       </DropdownMenuTrigger>

@@ -262,7 +262,7 @@ export function AiPanel({ boardId }: Props) {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button variant="outline" size="sm">
+        <Button variant="outline" size="default">
           <Sparkles className="size-4" /> AI
         </Button>
       </SheetTrigger>

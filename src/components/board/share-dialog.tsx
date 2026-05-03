@@ -108,7 +108,7 @@ export function ShareDialog({ boardId, currentUserId, myRole }: Props) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
+        <Button variant="outline" size="default">
           <Users className="size-4" /> Поделиться
         </Button>
       </DialogTrigger>

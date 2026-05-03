@@ -104,7 +104,7 @@ export function BoardHeader({
             members={members.map((m) => m.user)}
           />
           <ArchivePanel boardId={board.id} canEdit={canMutate} />
-          <Button asChild variant="outline" size="sm">
+          <Button asChild variant="outline" size="default">
             <Link href={`/boards/${board.id}/analytics`}>
               <BarChart3 className="size-4" /> Аналитика
             </Link>
