@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { revalidateAndNotifyBoard } from "@/lib/realtime/notify";
 
 import { requireUser } from "@/lib/auth";
 import {
@@ -68,7 +69,7 @@ export async function applyPendingAction(
       });
     });
 
-    revalidatePath(`/boards/${pending.boardId}`);
+    await revalidateAndNotifyBoard(pending.boardId);
     return actionOk(undefined);
   } catch (e) {
     return handle(e);

@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { revalidateAndNotifyBoard } from "@/lib/realtime/notify";
 import { z } from "zod";
 
 import { requireUser } from "@/lib/auth";
@@ -58,7 +59,7 @@ export async function createComment(
       data: { cardId, authorId: user.id, body: parsed.data },
       select: { id: true },
     });
-    revalidatePath(`/boards/${boardId}`);
+    await revalidateAndNotifyBoard(boardId);
     return actionOk({ id: c.id });
   } catch (e) {
     return handle(e);
@@ -90,7 +91,7 @@ export async function updateComment(
       where: { id: commentId },
       data: { body: parsed.data },
     });
-    revalidatePath(`/boards/${c.card.column.boardId}`);
+    await revalidateAndNotifyBoard(c.card.column.boardId);
     return actionOk(undefined);
   } catch (e) {
     return handle(e);
@@ -117,7 +118,7 @@ export async function deleteComment(
       throw new ForbiddenError();
     }
     await prisma.comment.delete({ where: { id: commentId } });
-    revalidatePath(`/boards/${boardId}`);
+    await revalidateAndNotifyBoard(boardId);
     return actionOk(undefined);
   } catch (e) {
     return handle(e);

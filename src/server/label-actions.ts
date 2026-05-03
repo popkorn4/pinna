@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { revalidateAndNotifyBoard } from "@/lib/realtime/notify";
 import { z } from "zod";
 
 import { requireUser } from "@/lib/auth";
@@ -84,7 +85,7 @@ export async function createLabel(
       select: { id: true },
     });
 
-    revalidatePath(`/boards/${boardId}`);
+    await revalidateAndNotifyBoard(boardId);
     return actionOk({ id: label.id });
   } catch (e) {
     return handle(e);
@@ -122,7 +123,7 @@ export async function updateLabel(
       },
     });
 
-    revalidatePath(`/boards/${label.boardId}`);
+    await revalidateAndNotifyBoard(label.boardId);
     return actionOk(undefined);
   } catch (e) {
     return handle(e);
@@ -145,7 +146,7 @@ export async function deleteLabel(
     // Каскадно убираем со всех карточек (в схеме CardLabel onDelete Cascade)
     await prisma.label.delete({ where: { id: labelId } });
 
-    revalidatePath(`/boards/${label.boardId}`);
+    await revalidateAndNotifyBoard(label.boardId);
     return actionOk(undefined);
   } catch (e) {
     return handle(e);
@@ -179,7 +180,7 @@ export async function addLabelToCard(
       update: {},
     });
 
-    revalidatePath(`/boards/${card.column.boardId}`);
+    await revalidateAndNotifyBoard(card.column.boardId);
     return actionOk(undefined);
   } catch (e) {
     return handle(e);
@@ -202,7 +203,7 @@ export async function removeLabelFromCard(
 
     await prisma.cardLabel.deleteMany({ where: { cardId, labelId } });
 
-    revalidatePath(`/boards/${card.column.boardId}`);
+    await revalidateAndNotifyBoard(card.column.boardId);
     return actionOk(undefined);
   } catch (e) {
     return handle(e);

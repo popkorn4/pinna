@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 
 import { BoardHeader } from "@/components/board/board-header";
 import { BoardDnd } from "@/components/board/board-dnd";
+import { BoardRealtime } from "@/components/board/board-realtime";
 import { CardModalLoader } from "@/components/board/card-modal-loader";
 import { requireUser } from "@/lib/auth";
 import { NotFoundError, canMutateContent } from "@/lib/auth/permissions";
@@ -72,6 +73,8 @@ export default async function BoardPage({ params, searchParams }: Props) {
         boardLabels={boardLabels}
         canEdit={canEdit}
       />
+
+      <BoardRealtime boardId={board.id} />
     </div>
   );
 }

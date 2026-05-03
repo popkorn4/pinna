@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { revalidateAndNotifyBoard } from "@/lib/realtime/notify";
 import { z } from "zod";
 
 import { requireUser } from "@/lib/auth";
@@ -108,7 +109,7 @@ export async function createChecklist(
       select: { id: true },
     });
 
-    revalidatePath(`/boards/${boardId}`);
+    await revalidateAndNotifyBoard(boardId);
     return actionOk({ id: cl.id });
   } catch (e) {
     return handle(e);
@@ -133,7 +134,7 @@ export async function updateChecklist(
       where: { id: checklistId },
       data: { title: parsed.data },
     });
-    revalidatePath(`/boards/${boardId}`);
+    await revalidateAndNotifyBoard(boardId);
     return actionOk(undefined);
   } catch (e) {
     return handle(e);
@@ -149,7 +150,7 @@ export async function deleteChecklist(
     const role = await assertBoardAccess(user.id, boardId);
     if (!canMutateContent(role)) throw new ForbiddenError();
     await prisma.checklist.delete({ where: { id: checklistId } });
-    revalidatePath(`/boards/${boardId}`);
+    await revalidateAndNotifyBoard(boardId);
     return actionOk(undefined);
   } catch (e) {
     return handle(e);
@@ -183,7 +184,7 @@ export async function addChecklistItem(
       },
       select: { id: true },
     });
-    revalidatePath(`/boards/${boardId}`);
+    await revalidateAndNotifyBoard(boardId);
     return actionOk({ id: item.id });
   } catch (e) {
     return handle(e);
@@ -208,7 +209,7 @@ export async function toggleChecklistItem(
       where: { id: itemId },
       data: { done: !item.done },
     });
-    revalidatePath(`/boards/${boardId}`);
+    await revalidateAndNotifyBoard(boardId);
     return actionOk(undefined);
   } catch (e) {
     return handle(e);
@@ -231,7 +232,7 @@ export async function updateChecklistItem(
       where: { id: itemId },
       data: { text: parsed.data },
     });
-    revalidatePath(`/boards/${boardId}`);
+    await revalidateAndNotifyBoard(boardId);
     return actionOk(undefined);
   } catch (e) {
     return handle(e);
@@ -247,7 +248,7 @@ export async function deleteChecklistItem(
     const role = await assertBoardAccess(user.id, boardId);
     if (!canMutateContent(role)) throw new ForbiddenError();
     await prisma.checklistItem.delete({ where: { id: itemId } });
-    revalidatePath(`/boards/${boardId}`);
+    await revalidateAndNotifyBoard(boardId);
     return actionOk(undefined);
   } catch (e) {
     return handle(e);

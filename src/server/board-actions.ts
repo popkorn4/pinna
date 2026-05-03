@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { revalidateAndNotifyBoard } from "@/lib/realtime/notify";
 import { z } from "zod";
 
 import { requireUser } from "@/lib/auth";
@@ -209,7 +210,7 @@ export async function updateBoard(
       return actionError("Проверьте поля", fieldErrorsFromZod(parsed.error));
     }
     await prisma.board.update({ where: { id: boardId }, data: parsed.data });
-    revalidatePath(`/boards/${boardId}`);
+    await revalidateAndNotifyBoard(boardId);
     revalidatePath("/boards");
     return actionOk(undefined);
   } catch (e) {
@@ -297,7 +298,7 @@ export async function createColumn(
       data: { boardId, title: parsed.data.title, position },
       select: { id: true },
     });
-    revalidatePath(`/boards/${boardId}`);
+    await revalidateAndNotifyBoard(boardId);
     return actionOk({ id: col.id });
   } catch (e) {
     return handle(e);
@@ -326,7 +327,7 @@ export async function updateColumn(
       where: { id: columnId },
       data: { title: parsed.data.title },
     });
-    revalidatePath(`/boards/${col.boardId}`);
+    await revalidateAndNotifyBoard(col.boardId);
     return actionOk(undefined);
   } catch (e) {
     return handle(e);
@@ -359,7 +360,7 @@ export async function deleteColumn(
     }
 
     await prisma.column.delete({ where: { id: columnId } });
-    revalidatePath(`/boards/${col.boardId}`);
+    await revalidateAndNotifyBoard(col.boardId);
     return actionOk(undefined);
   } catch (e) {
     return handle(e);
@@ -392,7 +393,7 @@ export async function reorderColumns(
         }),
       ),
     );
-    revalidatePath(`/boards/${boardId}`);
+    await revalidateAndNotifyBoard(boardId);
     return actionOk(undefined);
   } catch (e) {
     return handle(e);

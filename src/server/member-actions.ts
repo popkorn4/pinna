@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { revalidateAndNotifyBoard } from "@/lib/realtime/notify";
 import { redirect } from "next/navigation";
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
@@ -110,7 +111,7 @@ export async function inviteToBoard(
       acceptUrl,
     });
 
-    revalidatePath(`/boards/${boardId}`);
+    await revalidateAndNotifyBoard(boardId);
     return actionOk({
       url: acceptUrl,
       emailSent: emailRes.ok && !emailRes.skipped,
@@ -133,7 +134,7 @@ export async function revokeInvite(
     const role = await assertBoardAccess(user.id, inv.boardId);
     if (!canManageMembers(role)) throw new ForbiddenError();
     await prisma.boardInvite.delete({ where: { id: inviteId } });
-    revalidatePath(`/boards/${inv.boardId}`);
+    await revalidateAndNotifyBoard(inv.boardId);
     return actionOk(undefined);
   } catch (e) {
     return handle(e);
@@ -189,7 +190,7 @@ export async function acceptInvite(
       });
     });
 
-    revalidatePath(`/boards/${invite.boardId}`);
+    await revalidateAndNotifyBoard(invite.boardId);
     revalidatePath("/boards");
     return actionOk({ boardId: invite.boardId });
   } catch (e) {
@@ -230,7 +231,7 @@ export async function changeMemberRole(
       where: { boardId_userId: { boardId, userId } },
       data: { role: parsed.data },
     });
-    revalidatePath(`/boards/${boardId}`);
+    await revalidateAndNotifyBoard(boardId);
     return actionOk(undefined);
   } catch (e) {
     return handle(e);
@@ -264,7 +265,7 @@ export async function removeMember(
     await prisma.boardMember.delete({
       where: { boardId_userId: { boardId, userId } },
     });
-    revalidatePath(`/boards/${boardId}`);
+    await revalidateAndNotifyBoard(boardId);
     return actionOk(undefined);
   } catch (e) {
     return handle(e);

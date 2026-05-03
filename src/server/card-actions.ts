@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { revalidateAndNotifyBoard } from "@/lib/realtime/notify";
 import { z } from "zod";
 
 import { requireUser } from "@/lib/auth";
@@ -171,7 +172,7 @@ export async function createCard(
       select: { id: true },
     });
 
-    revalidatePath(`/boards/${boardId}`);
+    await revalidateAndNotifyBoard(boardId);
     return actionOk({ id: card.id });
   } catch (e) {
     return handle(e);
@@ -210,7 +211,7 @@ export async function updateCard(
       },
     });
 
-    revalidatePath(`/boards/${boardId}`);
+    await revalidateAndNotifyBoard(boardId);
     return actionOk(undefined);
   } catch (e) {
     return handle(e);
@@ -240,7 +241,7 @@ export async function assignCard(
       where: { id: cardId },
       data: { assigneeId },
     });
-    revalidatePath(`/boards/${boardId}`);
+    await revalidateAndNotifyBoard(boardId);
     return actionOk(undefined);
   } catch (e) {
     return handle(e);
@@ -260,7 +261,7 @@ export async function archiveCard(
       where: { id: cardId },
       data: { archivedAt: new Date() },
     });
-    revalidatePath(`/boards/${boardId}`);
+    await revalidateAndNotifyBoard(boardId);
     return actionOk(undefined);
   } catch (e) {
     return handle(e);
@@ -280,7 +281,7 @@ export async function unarchiveCard(
       where: { id: cardId },
       data: { archivedAt: null },
     });
-    revalidatePath(`/boards/${boardId}`);
+    await revalidateAndNotifyBoard(boardId);
     return actionOk(undefined);
   } catch (e) {
     return handle(e);
@@ -297,7 +298,7 @@ export async function deleteCard(
     if (!canMutateContent(role)) throw new ForbiddenError();
 
     await prisma.card.delete({ where: { id: cardId } });
-    revalidatePath(`/boards/${boardId}`);
+    await revalidateAndNotifyBoard(boardId);
     return actionOk(undefined);
   } catch (e) {
     return handle(e);
@@ -430,7 +431,7 @@ export async function moveCard(input: {
       newPos = positions[neighbors.findIndex((c) => c.id === cardId)];
     }
 
-    revalidatePath(`/boards/${targetCol.boardId}`);
+    await revalidateAndNotifyBoard(targetCol.boardId);
     return actionOk({ position: newPos });
   } catch (e) {
     return handle(e);
@@ -461,7 +462,7 @@ export async function reorderCardsInColumn(
         }),
       ),
     );
-    revalidatePath(`/boards/${boardId}`);
+    await revalidateAndNotifyBoard(boardId);
     return actionOk(undefined);
   } catch (e) {
     return handle(e);
