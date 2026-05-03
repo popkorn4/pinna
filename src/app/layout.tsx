@@ -22,7 +22,7 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
-  title: "Доска — Kanban с AI-агентом",
+  title: "Канва — Kanban с AI-агентом",
   description:
     "Минималистичный планировщик с досками, карточками и помощником, который понимает текстовые команды.",
 };

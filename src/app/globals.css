@@ -7,6 +7,10 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-brand: var(--brand);
+  --color-brand-foreground: var(--brand-foreground);
+  --color-brand-soft: var(--brand-soft);
+  --color-ink: var(--ink);
   --font-sans: var(--font-sans);
   --font-mono: var(--font-geist-mono);
   --font-display: var(--font-fraunces);
@@ -80,8 +84,16 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
+  /* почему слегка тёплый бэкграунд: чистый белый + Fraunces смотрится холодно;
+     лёгкий кремовый тон делает интерфейс «бумажным» */
+  --background: oklch(0.992 0.005 80);
+  --foreground: oklch(0.16 0.02 60);
+  /* брендовая охра — акцент: подзаголовки, рамка-«полоска» бренда, hover-фон */
+  --brand: oklch(0.62 0.13 60);
+  --brand-foreground: oklch(0.99 0.005 80);
+  --brand-soft: oklch(0.95 0.04 70);
+  /* тёмные чернила — для крупной декоративной типографики на лендинге */
+  --ink: oklch(0.22 0.04 250);
 }
 
 .dark {
@@ -116,6 +128,11 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+  /* в тёмной теме охра менее насыщенная — чтобы не "жгла" */
+  --brand: oklch(0.78 0.12 70);
+  --brand-foreground: oklch(0.16 0.02 60);
+  --brand-soft: oklch(0.28 0.06 70);
+  --ink: oklch(0.95 0.02 80);
 }
 
 @layer base {

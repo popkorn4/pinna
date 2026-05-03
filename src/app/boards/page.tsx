@@ -17,8 +17,12 @@ export default async function BoardsPage() {
   return (
     <div className="min-h-dvh flex flex-col">
       <header className="flex items-center justify-between px-6 md:px-12 py-6 border-b border-border/60">
-        <Link href="/" className="font-display text-2xl tracking-tight">
-          Доска
+        <Link
+          href="/"
+          className="font-display text-2xl tracking-tight inline-flex items-baseline gap-1"
+        >
+          Канва
+          <span className="size-1.5 rounded-full bg-brand" aria-hidden />
         </Link>
         <div className="flex items-center gap-2">
           <ThemeToggle />
@@ -29,8 +33,8 @@ export default async function BoardsPage() {
       <main className="flex-1 px-6 md:px-12 py-12 md:py-16 max-w-5xl mx-auto w-full">
         <div className="flex items-end justify-between gap-4 mb-12">
           <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2">
-              Доски
+            <p className="text-xs uppercase tracking-[0.2em] text-brand mb-2 flex items-center gap-2">
+              <span className="inline-block h-px w-6 bg-brand" /> Доски
             </p>
             <h1 className="font-display text-4xl md:text-5xl tracking-tight">
               Мои доски

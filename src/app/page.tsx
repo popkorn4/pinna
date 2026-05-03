@@ -14,10 +14,14 @@ export default async function HomePage() {
       <header className="flex items-center justify-between px-6 md:px-12 py-6 border-b border-border/60">
         <Link
           href="/"
-          className="font-display text-2xl tracking-tight"
-          aria-label="Доска"
+          className="font-display text-2xl tracking-tight inline-flex items-baseline gap-1"
+          aria-label="Канва"
         >
-          Доска
+          Канва
+          <span
+            className="size-1.5 rounded-full bg-brand"
+            aria-hidden
+          />
         </Link>
         <div className="flex items-center gap-2">
           <ThemeToggle />
@@ -50,15 +54,15 @@ export default async function HomePage() {
       <main className="flex-1 px-6 md:px-12 py-16 md:py-24 max-w-5xl mx-auto w-full">
         <section className="grid grid-cols-12 gap-x-6 gap-y-16">
           <div className="col-span-12 md:col-span-8">
-            <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-6">
-              v0.1 · превью
+            <p className="text-xs uppercase tracking-[0.2em] text-brand mb-6 flex items-center gap-2">
+              <span className="inline-block h-px w-8 bg-brand" /> v0.1 · превью
             </p>
             <h1 className="font-display text-5xl md:text-7xl leading-[0.95] tracking-tight">
               Планировщик
               <br />
               с собственным
               <br />
-              <em className="italic text-muted-foreground">помощником.</em>
+              <em className="italic text-brand">помощником.</em>
             </h1>
             <p className="mt-8 text-lg md:text-xl text-muted-foreground max-w-xl leading-relaxed">
               Доски, колонки, карточки. И агент, который понимает обычные
@@ -111,7 +115,7 @@ export default async function HomePage() {
       </main>
 
       <footer className="px-6 md:px-12 py-8 border-t border-border/60 text-xs text-muted-foreground flex justify-between">
-        <span>© {new Date().getFullYear()} Доска</span>
+        <span>© {new Date().getFullYear()} Канва</span>
         <span className="font-mono">localhost</span>
       </footer>
     </div>
@@ -130,7 +134,7 @@ function Block({
   return (
     <div>
       <div className="flex items-baseline gap-3 mb-2">
-        <span className="font-mono text-xs text-muted-foreground">{index}</span>
+        <span className="font-mono text-xs text-brand">{index}</span>
         <h3 className="font-display text-xl">{title}</h3>
       </div>
       <p className="text-muted-foreground leading-relaxed pl-9">{body}</p>
