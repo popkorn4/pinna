@@ -161,7 +161,21 @@ export async function getBoard(boardId: string) {
           id: true,
           title: true,
           position: true,
-          _count: { select: { cards: true } },
+          cards: {
+            where: { archivedAt: null },
+            orderBy: { position: "asc" },
+            select: {
+              id: true,
+              title: true,
+              description: true,
+              position: true,
+              dueDate: true,
+              assignee: {
+                select: { id: true, name: true, email: true, image: true },
+              },
+            },
+          },
+          _count: { select: { cards: { where: { archivedAt: null } } } },
         },
       },
     },
