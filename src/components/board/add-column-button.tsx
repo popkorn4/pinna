@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 
@@ -13,6 +14,7 @@ type Props = {
 };
 
 export function AddColumnButton({ boardId }: Props) {
+  const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState("");
   const [pending, startTransition] = useTransition();
@@ -33,6 +35,7 @@ export function AddColumnButton({ boardId }: Props) {
       if (!r.ok) toast.error(r.error);
       else {
         setTitle("");
+        router.refresh();
         // оставляем поле открытым — удобно добавлять подряд
         inputRef.current?.focus();
       }

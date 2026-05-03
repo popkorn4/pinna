@@ -66,7 +66,10 @@ export function BoardCardActions({ boardId, canManage }: Props) {
                   startTransition(async () => {
                     const r = await archiveBoard(boardId);
                     if (!r.ok) toast.error(r.error);
-                    else toast.success("Доска в архиве");
+                    else {
+                      toast.success("Доска в архиве");
+                      router.refresh();
+                    }
                   })
                 }
               >
@@ -103,7 +106,10 @@ export function BoardCardActions({ boardId, canManage }: Props) {
                 startTransition(async () => {
                   const r = await deleteBoard(boardId);
                   if (!r.ok) toast.error(r.error);
-                  else toast.success("Доска удалена");
+                  else {
+                    toast.success("Доска удалена");
+                    router.refresh();
+                  }
                   setConfirmOpen(false);
                 })
               }

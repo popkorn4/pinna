@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 
@@ -13,6 +14,7 @@ type Props = {
 };
 
 export function AddCardComposer({ columnId }: Props) {
+  const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState("");
   const [pending, startTransition] = useTransition();
@@ -35,6 +37,7 @@ export function AddCardComposer({ columnId }: Props) {
         return;
       }
       setTitle("");
+      router.refresh();
       ref.current?.focus();
     });
   }

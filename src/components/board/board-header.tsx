@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ChevronLeft, Sparkles, Users } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -29,6 +30,7 @@ type Props = {
 };
 
 export function BoardHeader({ user, board, members, canEdit }: Props) {
+  const router = useRouter();
   return (
     <header className="border-b border-border/60">
       <div className="flex items-center justify-between px-4 md:px-8 py-4">
@@ -57,6 +59,7 @@ export function BoardHeader({ user, board, members, canEdit }: Props) {
             inputClassName="font-display text-3xl tracking-tight"
             onSubmit={async (next) => {
               const r = await updateBoard(board.id, { title: next });
+              if (r.ok) router.refresh();
               return { ok: r.ok, error: r.ok ? undefined : r.error };
             }}
           />

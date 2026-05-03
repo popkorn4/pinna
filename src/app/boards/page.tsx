@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { formatDistanceToNow } from "date-fns";
+import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -70,10 +70,9 @@ export default async function BoardsPage() {
                     <div>{b.columnsCount} колонок</div>
                     <div>{b.cardsCount} карточек</div>
                     <div>
-                      {formatDistanceToNow(b.updatedAt, {
-                        addSuffix: true,
-                        locale: ru,
-                      })}
+                      {/* почему абсолютная дата: relative time даёт hydration mismatch
+                          (разное "сейчас" на сервере и клиенте) */}
+                      {format(b.updatedAt, "d MMM yyyy", { locale: ru })}
                     </div>
                   </div>
                   <div className="col-span-1 flex justify-end">

@@ -50,6 +50,9 @@ export function CardPreview({ card, isDragging }: Props) {
 }
 
 function DueBadge({ dueDate }: { dueDate: Date }) {
+  // почему suppressHydrationWarning: tone зависит от Date.now() — отличается
+  // между SSR и клиентом, если день/час сменился. Цвет — несущественная
+  // подсказка, лучше hydration-mismatch не блокировать.
   const days = differenceInCalendarDays(dueDate, new Date());
   const tone =
     days < 0
@@ -58,7 +61,7 @@ function DueBadge({ dueDate }: { dueDate: Date }) {
         ? "text-amber-600 dark:text-amber-400"
         : "text-muted-foreground";
   return (
-    <span className={cn("font-mono", tone)}>
+    <span className={cn("font-mono", tone)} suppressHydrationWarning>
       {format(dueDate, "d MMM", { locale: ru })}
     </span>
   );

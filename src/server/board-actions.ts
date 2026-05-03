@@ -147,7 +147,9 @@ export async function getBoard(boardId: string) {
   const role = await assertBoardAccess(user.id, boardId);
 
   const board = await prisma.board.findUnique({
-    where: { id: boardId },
+    // почему включаем archivedAt в where-условие: чтобы не показывать
+    // архив по прямому URL (404 как для несуществующей)
+    where: { id: boardId, archivedAt: null },
     include: {
       members: {
         select: {

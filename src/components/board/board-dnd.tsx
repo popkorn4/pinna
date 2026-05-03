@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import {
   DndContext,
   type DragEndEvent,
@@ -14,7 +14,11 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import {
+  SortableContext,
+  horizontalListSortingStrategy,
+  sortableKeyboardCoordinates,
+} from "@dnd-kit/sortable";
 import { toast } from "sonner";
 
 import { CardPreview } from "./card-preview";
@@ -34,16 +38,26 @@ export function BoardDnd({ boardId, initialColumns, canEdit }: Props) {
   const router = useRouter();
   const [columns, setColumns] = useState<ColumnView[]>(initialColumns);
   const [activeCard, setActiveCard] = useState<CardView | null>(null);
-  const [, startTransition] = useTransition();
+  const [pending, startTransition] = useTransition();
+  // почему храним отдельно: onDragOver мутирует локальное `columns`,
+  // и к onDragEnd мы уже не знаем, в какой колонке карточка БЫЛА в БД.
+  // Без этого "same column reorder" срабатывает для cross-column drag,
+  // и сервер кидает ForbiddenError (карточки нет в целевой колонке).
+  const dragOriginColumnRef = useRef<string | null>(null);
 
-  // Синхронизация при server-side обновлении props (после revalidatePath)
-  // useEffect не нужен — мы храним только локальное оптимистичное состояние,
-  // а после server action вызываем router.refresh() и компонент перерендерится
-  // с новыми initialColumns. Чтобы это работало, делаем key={hash} в parent — нет,
-  // проще сравнивать. Воспользуемся deferred approach: при каждом render
-  // initialColumns как источник истины, локальный state — overlay для DnD.
-  // Для простоты сейчас: оставляем локальный state и доверяем router.refresh
-  // (на dev-окружении нормально работает).
+  // Синхронизация: когда initialColumns обновился из RSC (после router.refresh),
+  // подменяем локальный state — но только если в данный момент нет активного
+  // drag и нет pending-действия (иначе перебьём оптимистичную перестановку
+  // и карточка "прыгнет" обратно).
+  const dragInProgress = activeCard !== null;
+  const initialRef = useRef(initialColumns);
+  useEffect(() => {
+    if (initialRef.current === initialColumns) return;
+    initialRef.current = initialColumns;
+    if (!dragInProgress && !pending) {
+      setColumns(initialColumns);
+    }
+  }, [initialColumns, dragInProgress, pending]);
 
   const sensors = useSensors(
     // почему distance: 5px — клик и drag различаются, иначе любой клик
@@ -79,6 +93,8 @@ export function BoardDnd({ boardId, initialColumns, canEdit }: Props) {
       | undefined;
     if (data?.type === "card") {
       setActiveCard(data.card);
+      const info = findCard(e.active.id as string);
+      dragOriginColumnRef.current = info?.columnId ?? null;
     }
   }
 
@@ -204,8 +220,12 @@ export function BoardDnd({ boardId, initialColumns, canEdit }: Props) {
     const toCol = findColumn(toColumnId);
     if (!toCol) return;
 
-    // Если перемещение внутри той же колонки — переставляем порядок
-    if (fromInfo.columnId === toColumnId && overCardId) {
+    const originColumnId = dragOriginColumnRef.current;
+    dragOriginColumnRef.current = null;
+
+    // Если перемещение внутри той же колонки (по СОСТОЯНИЮ В БД, не по локальной мутации) —
+    // переставляем порядок одним батч-апдейтом.
+    if (originColumnId === toColumnId && overCardId) {
       const oldIdx = toCol.cards.findIndex((c) => c.id === active.id);
       const newIdx = toCol.cards.findIndex((c) => c.id === overCardId);
       if (oldIdx === -1 || newIdx === -1 || oldIdx === newIdx) return;
@@ -231,28 +251,29 @@ export function BoardDnd({ boardId, initialColumns, canEdit }: Props) {
       return;
     }
 
-    // Между колонками — серверный move
-    const targetCol = findColumn(toColumnId);
-    if (!targetCol) return;
-    const cardPositionInTarget = targetCol.cards.findIndex(
-      (c) => c.id === active.id,
-    );
-    const beforeCardId =
-      cardPositionInTarget < targetCol.cards.length - 1
-        ? targetCol.cards[cardPositionInTarget + 1]?.id
-        : null;
-    const afterCardId =
-      cardPositionInTarget > 0
-        ? targetCol.cards[cardPositionInTarget - 1]?.id
-        : null;
+    // Между колонками — серверный move.
+    // почему берём решение прямо из over-события (а не из локально
+    // переставленного state): onDragOver мог не успеть отработать перед
+    // быстрым drop, и активная карточка ещё лежит в исходной колонке локально.
+    let beforeCardId: string | undefined;
+    let afterCardId: string | undefined;
+    let toEnd: boolean | undefined;
+
+    if (overData?.type === "card" && over.id !== active.id) {
+      // дропнули поверх карточки — встаём НАД ней
+      beforeCardId = over.id as string;
+    } else {
+      // дропнули в пустую часть колонки — в конец
+      toEnd = true;
+    }
 
     startTransition(async () => {
       const r = await moveCard({
         cardId: active.id as string,
         targetColumnId: toColumnId,
-        beforeCardId: beforeCardId ?? undefined,
-        afterCardId: !beforeCardId ? afterCardId ?? undefined : undefined,
-        toEnd: !beforeCardId && !afterCardId ? true : undefined,
+        beforeCardId,
+        afterCardId,
+        toEnd,
       });
       if (!r.ok) {
         toast.error(r.error);
@@ -274,7 +295,7 @@ export function BoardDnd({ boardId, initialColumns, canEdit }: Props) {
     >
       <SortableContext
         items={columns.map((c) => c.id)}
-        strategy={verticalListSortingStrategy}
+        strategy={horizontalListSortingStrategy}
       >
         <div className="px-4 md:px-8 py-6 flex items-stretch gap-4 h-full min-h-[60vh]">
           {columns.map((col) => (

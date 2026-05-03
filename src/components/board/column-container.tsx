@@ -1,9 +1,11 @@
 "use client";
 
 import { useTransition, useState } from "react";
-import { MoreHorizontal, Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { MoreHorizontal, Trash2, GripVertical } from "lucide-react";
 import { toast } from "sonner";
-import { useDroppable } from "@dnd-kit/core";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import {
   SortableContext,
   verticalListSortingStrategy,
@@ -38,23 +40,47 @@ type Props = {
 };
 
 export function ColumnContainer({ column, canEdit }: Props) {
+  const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [confirm, setConfirm] = useState(false);
 
-  const { setNodeRef, isOver } = useDroppable({
-    id: `col:${column.id}`,
+  // useSortable заодно даёт droppable для drag карточек поверх колонки.
+  // type=column в data — чтобы BoardDnd различал перенос колонок и карточек.
+  const {
+    setNodeRef,
+    attributes,
+    listeners,
+    transform,
+    transition,
+    isDragging,
+    isOver,
+  } = useSortable({
+    id: column.id,
     data: { type: "column", columnId: column.id },
+    disabled: !canEdit,
   });
 
   return (
     <section
       ref={setNodeRef}
+      style={{ transform: CSS.Translate.toString(transform), transition }}
       className={`w-80 shrink-0 rounded-lg border bg-card/40 flex flex-col max-h-full transition-colors ${
         isOver ? "border-ring" : "border-border/60"
-      }`}
+      } ${isDragging ? "opacity-40" : ""}`}
     >
       <header className="flex items-center justify-between gap-2 px-3 py-2 border-b border-border/60">
         <div className="min-w-0 flex items-baseline gap-2">
+          {canEdit ? (
+            <button
+              type="button"
+              {...attributes}
+              {...listeners}
+              aria-label="Перетащить колонку"
+              className="text-muted-foreground hover:text-foreground cursor-grab active:cursor-grabbing -ml-1"
+            >
+              <GripVertical className="size-4" />
+            </button>
+          ) : null}
           <InlineTextEdit
             initial={column.title}
             disabled={!canEdit}
@@ -63,6 +89,7 @@ export function ColumnContainer({ column, canEdit }: Props) {
             inputClassName="font-display text-lg tracking-tight"
             onSubmit={async (next) => {
               const r = await updateColumn(column.id, { title: next });
+              if (r.ok) router.refresh();
               return { ok: r.ok, error: r.ok ? undefined : r.error };
             }}
           />
@@ -140,7 +167,10 @@ export function ColumnContainer({ column, canEdit }: Props) {
                     force: column.cards.length > 0,
                   });
                   if (!r.ok) toast.error(r.error);
-                  else toast.success("Колонка удалена");
+                  else {
+                    toast.success("Колонка удалена");
+                    router.refresh();
+                  }
                   setConfirm(false);
                 })
               }
