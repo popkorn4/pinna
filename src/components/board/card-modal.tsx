@@ -45,6 +45,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { InlineTextEdit } from "@/components/board/inline-text-edit";
 import { CardAssigneeButton } from "@/components/board/card-assignee-button";
 import { CardLabelsPopover } from "@/components/board/card-labels-popover";
+import { CardHistorySection } from "@/components/board/card-history-section";
 import {
   archiveCard,
   deleteCard,
@@ -259,6 +260,8 @@ export function CardModal({
                   onChange={refreshDetails}
                 />
               ) : null}
+
+              <CardHistorySection cardId={card.id} boardId={boardId} />
             </div>
 
             <aside className="space-y-3">

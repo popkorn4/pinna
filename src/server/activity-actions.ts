@@ -9,6 +9,29 @@ import { prisma } from "@/lib/db/prisma";
  * почему 100: для MVP хватает; пагинация — позже.
  * Фильтруем системные AI_RATE_HIT (это техническое для rate-limit'а).
  */
+export async function listCardActivity(cardId: string) {
+  const user = await requireUser();
+  const card = await prisma.card.findUnique({
+    where: { id: cardId },
+    select: { column: { select: { boardId: true } } },
+  });
+  if (!card) return [];
+  await assertBoardAccess(user.id, card.column.boardId);
+  return prisma.activity.findMany({
+    where: { cardId, type: { not: "AI_RATE_HIT" } },
+    orderBy: { createdAt: "desc" },
+    take: 200,
+    select: {
+      id: true,
+      type: true,
+      payload: true,
+      createdAt: true,
+      cardId: true,
+      user: { select: { id: true, name: true, email: true, image: true } },
+    },
+  });
+}
+
 export async function listBoardActivity(
   boardId: string,
   filterUserId?: string,

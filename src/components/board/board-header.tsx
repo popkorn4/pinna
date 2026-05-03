@@ -12,6 +12,7 @@ import { InlineTextEdit } from "@/components/board/inline-text-edit";
 import { BoardLabelsPopover } from "@/components/board/board-labels-popover";
 import { ShareDialog } from "@/components/board/share-dialog";
 import { ActivityPanel } from "@/components/board/activity-panel";
+import { BoardExportButton } from "@/components/board/board-export-button";
 import { AiPanel } from "@/components/board/ai-panel";
 import type { LabelView } from "@/components/board/types";
 import { boardAccent } from "@/lib/colors";
@@ -97,6 +98,7 @@ export function BoardHeader({
             boardId={board.id}
             members={members.map((m) => m.user)}
           />
+          <BoardExportButton boardId={board.id} boardTitle={board.title} />
           <ShareDialog
             boardId={board.id}
             currentUserId={user.id}

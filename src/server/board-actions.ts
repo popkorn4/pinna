@@ -13,6 +13,7 @@ import {
   canEditBoard,
   canMutateContent,
 } from "@/lib/auth/permissions";
+import { BOARD_TEMPLATES } from "@/lib/board-templates";
 import { prisma } from "@/lib/db/prisma";
 import { POSITION_STEP } from "@/lib/position";
 import {
@@ -59,12 +60,17 @@ function handle(err: unknown): ActionResult<never> {
 export async function createBoard(input: {
   title: string;
   description?: string;
+  templateKey?: string;
 }): Promise<ActionResult<{ id: string }>> {
   const user = await requireUser();
   const parsed = boardCreateSchema.safeParse(input);
   if (!parsed.success) {
     return actionError("Проверьте поля", fieldErrorsFromZod(parsed.error));
   }
+
+  const template = input.templateKey
+    ? BOARD_TEMPLATES.find((t) => t.key === input.templateKey)
+    : undefined;
 
   try {
     const board = await prisma.$transaction(async (tx) => {
@@ -79,6 +85,25 @@ export async function createBoard(input: {
       await tx.boardMember.create({
         data: { boardId: b.id, userId: user.id, role: "OWNER" },
       });
+      if (template && template.columns.length > 0) {
+        await tx.column.createMany({
+          data: template.columns.map((title, idx) => ({
+            boardId: b.id,
+            title,
+            position: (idx + 1) * POSITION_STEP,
+          })),
+        });
+      }
+      if (template && template.labels.length > 0) {
+        await tx.label.createMany({
+          data: template.labels.map((l, idx) => ({
+            boardId: b.id,
+            name: l.name,
+            color: l.color,
+            position: idx,
+          })),
+        });
+      }
       return b;
     });
     revalidatePath("/boards");
