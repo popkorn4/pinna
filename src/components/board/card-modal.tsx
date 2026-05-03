@@ -43,6 +43,7 @@ import {
 } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
 import { InlineTextEdit } from "@/components/board/inline-text-edit";
+import { CardAssigneeButton } from "@/components/board/card-assignee-button";
 import { CardLabelsPopover } from "@/components/board/card-labels-popover";
 import {
   archiveCard,
@@ -258,6 +259,12 @@ export function CardModal({
             </div>
 
             <aside className="space-y-3">
+              <CardAssigneeButton
+                cardId={card.id}
+                boardId={boardId}
+                assignee={card.assignee}
+                disabled={!canEdit}
+              />
               <DueButton
                 dueDate={card.dueDate}
                 onChange={setDue}

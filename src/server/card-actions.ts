@@ -217,6 +217,36 @@ export async function updateCard(
   }
 }
 
+export async function assignCard(
+  cardId: string,
+  assigneeId: string | null,
+): Promise<ActionResult<void>> {
+  try {
+    const user = await requireUser();
+    const { boardId } = await getCardBoard(cardId);
+    const role = await assertBoardAccess(user.id, boardId);
+    if (!canMutateContent(role)) throw new ForbiddenError();
+
+    if (assigneeId) {
+      // Назначить можно только участника доски
+      const member = await prisma.boardMember.findUnique({
+        where: { boardId_userId: { boardId, userId: assigneeId } },
+        select: { userId: true },
+      });
+      if (!member) return actionError("Пользователь не участник доски");
+    }
+
+    await prisma.card.update({
+      where: { id: cardId },
+      data: { assigneeId },
+    });
+    revalidatePath(`/boards/${boardId}`);
+    return actionOk(undefined);
+  } catch (e) {
+    return handle(e);
+  }
+}
+
 export async function archiveCard(
   cardId: string,
 ): Promise<ActionResult<void>> {

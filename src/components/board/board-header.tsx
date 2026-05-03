@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, Sparkles, Users } from "lucide-react";
+import { ChevronLeft, Sparkles } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -10,12 +10,14 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { UserMenu } from "@/components/user-menu";
 import { InlineTextEdit } from "@/components/board/inline-text-edit";
 import { BoardLabelsPopover } from "@/components/board/board-labels-popover";
+import { ShareDialog } from "@/components/board/share-dialog";
 import type { LabelView } from "@/components/board/types";
 import { boardAccent } from "@/lib/colors";
 import { updateBoard } from "@/server/board-actions";
+import type { BoardRole } from "@prisma/client";
 
 type Member = {
-  role: "OWNER" | "MEMBER" | "VIEWER";
+  role: BoardRole;
   user: {
     id: string;
     name: string | null;
@@ -25,10 +27,16 @@ type Member = {
 };
 
 type Props = {
-  user: { name?: string | null; email?: string | null; image?: string | null };
+  user: {
+    id: string;
+    name?: string | null;
+    email?: string | null;
+    image?: string | null;
+  };
   board: { id: string; title: string };
   members: Member[];
   labels: LabelView[];
+  myRole: BoardRole;
   canEdit: boolean;
   canMutate: boolean;
 };
@@ -38,6 +46,7 @@ export function BoardHeader({
   board,
   members,
   labels,
+  myRole,
   canEdit,
   canMutate,
 }: Props) {
@@ -82,9 +91,11 @@ export function BoardHeader({
             labels={labels}
             canMutate={canMutate}
           />
-          <Button variant="outline" size="sm" disabled>
-            <Users className="size-4" /> Поделиться
-          </Button>
+          <ShareDialog
+            boardId={board.id}
+            currentUserId={user.id}
+            myRole={myRole}
+          />
           <Button variant="outline" size="sm" disabled>
             <Sparkles className="size-4" /> AI
           </Button>

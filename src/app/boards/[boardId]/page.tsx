@@ -53,6 +53,7 @@ export default async function BoardPage({ params, searchParams }: Props) {
         board={{ id: board.id, title: board.title }}
         members={board.members}
         labels={boardLabels}
+        myRole={role}
         canEdit={role === "OWNER"}
         canMutate={canEdit}
       />

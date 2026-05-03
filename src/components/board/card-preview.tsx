@@ -5,6 +5,7 @@ import { differenceInCalendarDays, format } from "date-fns";
 import { ru } from "date-fns/locale";
 import { AlignLeft } from "lucide-react";
 
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { labelHex } from "@/lib/labels";
 import type { CardView } from "./types";
@@ -60,12 +61,27 @@ export function CardPreview({ card, isDragging }: Props) {
       <h4 className="font-medium text-sm leading-snug line-clamp-3">
         {card.title}
       </h4>
-      {(card.description || card.dueDate) && (
+      {(card.description || card.dueDate || card.assignee) && (
         <div className="mt-2 flex items-center gap-3 text-xs text-muted-foreground">
           {card.description ? (
             <AlignLeft className="size-3.5" aria-label="Есть описание" />
           ) : null}
           {card.dueDate ? <DueBadge dueDate={card.dueDate} /> : null}
+          {card.assignee ? (
+            <Avatar
+              className="size-5 ml-auto"
+              title={card.assignee.name || card.assignee.email}
+            >
+              {card.assignee.image ? (
+                <AvatarImage src={card.assignee.image} alt="" />
+              ) : null}
+              <AvatarFallback className="text-[8px]">
+                {(card.assignee.name || card.assignee.email)
+                  .slice(0, 1)
+                  .toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+          ) : null}
         </div>
       )}
     </button>
