@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { LogOut, Settings, User as UserIcon } from "lucide-react";
 import { useTransition } from "react";
 
@@ -48,8 +49,10 @@ export function UserMenu({ user }: Props) {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem disabled>
-          <UserIcon className="size-4" /> Профиль
+        <DropdownMenuItem asChild>
+          <Link href="/account">
+            <UserIcon className="size-4" /> Аккаунт
+          </Link>
         </DropdownMenuItem>
         <DropdownMenuItem disabled>
           <Settings className="size-4" /> Настройки

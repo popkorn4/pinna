@@ -304,6 +304,61 @@ export async function leaveBoard(
   }
 }
 
+/**
+ * Список входящих приглашений для текущего пользователя.
+ * Match по email (case-insensitive), только активные.
+ */
+export async function listMyPendingInvites() {
+  const user = await requireUser();
+  if (!user.email) return [];
+  return prisma.boardInvite.findMany({
+    where: {
+      email: user.email.toLowerCase(),
+      acceptedAt: null,
+      expiresAt: { gt: new Date() },
+    },
+    orderBy: { createdAt: "desc" },
+    select: {
+      id: true,
+      token: true,
+      role: true,
+      createdAt: true,
+      expiresAt: true,
+      board: { select: { id: true, title: true, description: true } },
+      invitedBy: {
+        select: { id: true, name: true, email: true, image: true },
+      },
+    },
+  });
+}
+
+/** Отклонить приглашение, адресованное мне. */
+export async function declineMyInvite(
+  inviteId: string,
+): Promise<ActionResult<void>> {
+  try {
+    const user = await requireUser();
+    const inv = await prisma.boardInvite.findUnique({
+      where: { id: inviteId },
+      select: { email: true, acceptedAt: true },
+    });
+    if (!inv) throw new NotFoundError();
+    if (
+      !user.email ||
+      inv.email.toLowerCase() !== user.email.toLowerCase()
+    ) {
+      throw new ForbiddenError();
+    }
+    if (inv.acceptedAt) return actionError("Уже принято");
+    await prisma.boardInvite.delete({ where: { id: inviteId } });
+    revalidatePath("/account");
+    revalidatePath("/boards");
+    return actionOk(undefined);
+  } catch (e) {
+    return handle(e);
+  }
+}
+
 export async function listBoardMembers(boardId: string) {
   const user = await requireUser();
   await assertBoardAccess(user.id, boardId);

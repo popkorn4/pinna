@@ -9,10 +9,15 @@ import { BoardCardActions } from "@/components/board/board-card-actions";
 import { requireUser } from "@/lib/auth";
 import { boardAccent } from "@/lib/colors";
 import { listMyBoards } from "@/server/board-actions";
+import { listMyPendingInvites } from "@/server/member-actions";
+import { Mail } from "lucide-react";
 
 export default async function BoardsPage() {
   const user = await requireUser();
-  const boards = await listMyBoards();
+  const [boards, invites] = await Promise.all([
+    listMyBoards(),
+    listMyPendingInvites(),
+  ]);
 
   return (
     <div className="min-h-dvh flex flex-col">
@@ -31,6 +36,30 @@ export default async function BoardsPage() {
       </header>
 
       <main className="flex-1 px-6 md:px-12 py-12 md:py-16 max-w-5xl mx-auto w-full">
+        {invites.length > 0 ? (
+          <Link
+            href="/account"
+            className="block mb-8 rounded-lg border border-brand/40 bg-brand/10 px-4 py-3 hover:bg-brand/15 transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <Mail className="size-4 text-brand shrink-0" />
+              <div className="flex-1 text-sm">
+                У вас{" "}
+                <span className="font-mono">{invites.length}</span>{" "}
+                {plural(invites.length, [
+                  "новое приглашение",
+                  "новых приглашения",
+                  "новых приглашений",
+                ])}
+                {" — "}
+                <span className="underline underline-offset-2">
+                  открыть аккаунт
+                </span>
+              </div>
+            </div>
+          </Link>
+        ) : null}
+
         <div className="flex items-end justify-between gap-4 mb-12">
           <div>
             <p className="text-xs uppercase tracking-[0.2em] text-brand mb-2 flex items-center gap-2">
@@ -93,6 +122,15 @@ export default async function BoardsPage() {
       </main>
     </div>
   );
+}
+
+function plural(n: number, forms: [string, string, string]): string {
+  // почему: русские склонения 1/2-4/5+ не покрываются Intl.PluralRules out of the box
+  const mod10 = n % 10;
+  const mod100 = n % 100;
+  if (mod10 === 1 && mod100 !== 11) return forms[0];
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return forms[1];
+  return forms[2];
 }
 
 function EmptyState() {
