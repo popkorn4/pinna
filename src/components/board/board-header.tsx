@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, Sparkles } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import { UserMenu } from "@/components/user-menu";
 import { InlineTextEdit } from "@/components/board/inline-text-edit";
 import { BoardLabelsPopover } from "@/components/board/board-labels-popover";
 import { ShareDialog } from "@/components/board/share-dialog";
+import { AiPanel } from "@/components/board/ai-panel";
 import type { LabelView } from "@/components/board/types";
 import { boardAccent } from "@/lib/colors";
 import { updateBoard } from "@/server/board-actions";
@@ -96,9 +97,7 @@ export function BoardHeader({
             currentUserId={user.id}
             myRole={myRole}
           />
-          <Button variant="outline" size="sm" disabled>
-            <Sparkles className="size-4" /> AI
-          </Button>
+          <AiPanel boardId={board.id} />
         </div>
       </div>
     </header>
