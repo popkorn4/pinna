@@ -121,6 +121,26 @@ export async function getCardDetails(cardId: string) {
   };
 }
 
+/** Архивные карточки доски — для UI «Архив». */
+export async function listArchivedCards(boardId: string) {
+  const user = await requireUser();
+  await assertBoardAccess(user.id, boardId);
+  return prisma.card.findMany({
+    where: {
+      archivedAt: { not: null },
+      column: { boardId },
+    },
+    orderBy: { archivedAt: "desc" },
+    take: 200,
+    select: {
+      id: true,
+      title: true,
+      archivedAt: true,
+      column: { select: { id: true, title: true } },
+    },
+  });
+}
+
 async function getCardBoard(
   cardId: string,
 ): Promise<{ boardId: string; columnId: string; position: number }> {

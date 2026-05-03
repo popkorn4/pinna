@@ -12,6 +12,7 @@ import { InlineTextEdit } from "@/components/board/inline-text-edit";
 import { BoardLabelsPopover } from "@/components/board/board-labels-popover";
 import { ShareDialog } from "@/components/board/share-dialog";
 import { ActivityPanel } from "@/components/board/activity-panel";
+import { ArchivePanel } from "@/components/board/archive-panel";
 import { BoardExportButton } from "@/components/board/board-export-button";
 import { BoardViewSwitcher } from "@/components/board/board-view-switcher";
 import { AiPanel } from "@/components/board/ai-panel";
@@ -102,6 +103,7 @@ export function BoardHeader({
             boardId={board.id}
             members={members.map((m) => m.user)}
           />
+          <ArchivePanel boardId={board.id} canEdit={canMutate} />
           <Button asChild variant="outline" size="sm">
             <Link href={`/boards/${board.id}/analytics`}>
               <BarChart3 className="size-4" /> Аналитика
