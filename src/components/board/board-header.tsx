@@ -2,10 +2,18 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { BarChart3, ChevronLeft } from "lucide-react";
+import { useState } from "react";
+import { BarChart3, ChevronLeft, Menu } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UserMenu } from "@/components/user-menu";
 import { InlineTextEdit } from "@/components/board/inline-text-edit";
@@ -58,6 +66,7 @@ export function BoardHeader({
   view = "kanban",
 }: Props) {
   const router = useRouter();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   return (
     <header className="border-b border-border/60">
       <div className="flex items-center justify-between px-4 md:px-8 py-4">
@@ -91,35 +100,86 @@ export function BoardHeader({
             }}
           />
         </div>
-        {/* почему -mx + overflow-x-auto: на мобильном горизонтальный скролл
-            кнопок выглядит лучше чем перенос на 2-3 строки */}
-        <div className="-mx-4 md:-mx-0 overflow-x-auto pb-1">
-          <div className="px-4 md:px-0 flex items-center gap-2 w-max lg:w-auto">
-            <BoardViewSwitcher boardId={board.id} view={view} />
-            <MemberStack members={members} />
-            <BoardLabelsPopover
-              boardId={board.id}
-              labels={labels}
-              canMutate={canMutate}
-            />
-            <ActivityPanel
-              boardId={board.id}
-              members={members.map((m) => m.user)}
-            />
-            <ArchivePanel boardId={board.id} canEdit={canMutate} />
-            <Button asChild variant="outline" size="default">
-              <Link href={`/boards/${board.id}/analytics`}>
-                <BarChart3 className="size-4" /> Аналитика
-              </Link>
-            </Button>
-            <BoardExportButton boardId={board.id} boardTitle={board.title} />
-            <ShareDialog
-              boardId={board.id}
-              currentUserId={user.id}
-              myRole={myRole}
-            />
-            <AiPanel boardId={board.id} />
-          </div>
+        {/* Десктоп: ряд кнопок. Мобильный: одна «Меню» + Sheet со всеми */}
+        <div className="hidden lg:flex items-center gap-2">
+          <BoardViewSwitcher boardId={board.id} view={view} />
+          <MemberStack members={members} />
+          <BoardLabelsPopover
+            boardId={board.id}
+            labels={labels}
+            canMutate={canMutate}
+          />
+          <ActivityPanel
+            boardId={board.id}
+            members={members.map((m) => m.user)}
+          />
+          <ArchivePanel boardId={board.id} canEdit={canMutate} />
+          <Button asChild variant="outline" size="default">
+            <Link href={`/boards/${board.id}/analytics`}>
+              <BarChart3 className="size-4" /> Аналитика
+            </Link>
+          </Button>
+          <BoardExportButton boardId={board.id} boardTitle={board.title} />
+          <ShareDialog
+            boardId={board.id}
+            currentUserId={user.id}
+            myRole={myRole}
+          />
+          <AiPanel boardId={board.id} />
+        </div>
+
+        {/* Мобильный: компактная строка + меню */}
+        <div className="flex lg:hidden items-center gap-2 self-end">
+          <BoardViewSwitcher boardId={board.id} view={view} />
+          <MemberStack members={members} />
+          <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+            <SheetTrigger asChild>
+              <Button variant="outline" size="default">
+                <Menu className="size-4" /> Меню
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-full sm:max-w-sm p-0 gap-0">
+              <SheetHeader className="px-4 py-3 border-b border-border/60">
+                <SheetTitle className="font-display text-xl tracking-tight">
+                  Действия
+                </SheetTitle>
+              </SheetHeader>
+              {/* почему оборачиваем триггеры в вертикальный flex с *:w-full:
+                  оригинальные компоненты-Sheets имеют свои triggerButton'ы;
+                  ставим их в строку — и каждый клик закрывает наше меню и
+                  открывает свой Sheet */}
+              <div
+                className="px-3 py-3 flex flex-col gap-2 [&>*>button]:w-full [&>button]:w-full [&_button[type=button]]:justify-start"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <BoardLabelsPopover
+                  boardId={board.id}
+                  labels={labels}
+                  canMutate={canMutate}
+                />
+                <ActivityPanel
+                  boardId={board.id}
+                  members={members.map((m) => m.user)}
+                />
+                <ArchivePanel boardId={board.id} canEdit={canMutate} />
+                <Button asChild variant="outline" size="default">
+                  <Link href={`/boards/${board.id}/analytics`}>
+                    <BarChart3 className="size-4" /> Аналитика
+                  </Link>
+                </Button>
+                <BoardExportButton
+                  boardId={board.id}
+                  boardTitle={board.title}
+                />
+                <ShareDialog
+                  boardId={board.id}
+                  currentUserId={user.id}
+                  myRole={myRole}
+                />
+                <AiPanel boardId={board.id} />
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
     </header>

@@ -47,7 +47,7 @@ export function AddColumnButton({ boardId }: Props) {
       <button
         type="button"
         onClick={() => setEditing(true)}
-        className="w-80 shrink-0 rounded-lg border border-dashed border-border/70 hover:border-border bg-transparent hover:bg-muted/30 transition-colors text-muted-foreground hover:text-foreground py-3 grid place-items-center"
+        className="w-full lg:w-80 shrink-0 rounded-lg border border-dashed border-border/70 hover:border-border bg-transparent hover:bg-muted/30 transition-colors text-muted-foreground hover:text-foreground py-3 grid place-items-center"
       >
         <span className="inline-flex items-center gap-2 text-sm">
           <Plus className="size-4" /> Колонка
@@ -57,7 +57,7 @@ export function AddColumnButton({ boardId }: Props) {
   }
 
   return (
-    <div className="w-80 shrink-0 rounded-lg border border-border bg-card p-2 space-y-2">
+    <div className="w-full lg:w-80 shrink-0 rounded-lg border border-border bg-card p-2 space-y-2">
       <Input
         ref={inputRef}
         value={title}

@@ -66,7 +66,7 @@ export default async function BoardPage({ params, searchParams }: Props) {
         view="kanban"
       />
 
-      <main className="flex-1 overflow-x-auto overflow-y-hidden">
+      <main className="flex-1 overflow-y-auto lg:overflow-x-auto lg:overflow-y-hidden">
         <BoardDnd
           boardId={board.id}
           initialColumns={columns}

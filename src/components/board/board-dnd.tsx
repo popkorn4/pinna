@@ -383,11 +383,11 @@ export function BoardDnd({ boardId, initialColumns, canEdit }: Props) {
   // важна для гидратации SortableContext-детей.
   if (!mounted) {
     return (
-      <div className="px-4 md:px-8 py-6 flex items-stretch gap-4 h-full min-h-[60vh]">
+      <div className="px-4 md:px-8 py-6 flex flex-col lg:flex-row lg:items-stretch gap-4 lg:h-full min-h-[60vh]">
         {columns.map((col) => (
           <section
             key={col.id}
-            className="w-80 shrink-0 rounded-lg border border-border/60 bg-card"
+            className="w-full lg:w-80 shrink-0 rounded-lg border border-border/60 bg-card h-32 lg:h-auto"
           />
         ))}
       </div>
@@ -410,7 +410,7 @@ export function BoardDnd({ boardId, initialColumns, canEdit }: Props) {
         items={columns.map((c) => c.id)}
         strategy={noopSortingStrategy}
       >
-        <div className="px-4 md:px-8 py-6 flex items-stretch gap-4 h-full min-h-[60vh]">
+        <div className="px-4 md:px-8 py-6 flex flex-col lg:flex-row lg:items-stretch gap-4 lg:h-full min-h-[60vh]">
           {columns.map((col) => (
             <ColumnContainer
               key={col.id}

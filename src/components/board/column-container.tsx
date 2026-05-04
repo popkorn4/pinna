@@ -58,7 +58,7 @@ export function ColumnContainer({ column, canEdit }: Props) {
   return (
     <section
       ref={setNodeRef}
-      className={`w-80 shrink-0 rounded-lg border bg-card flex flex-col max-h-full transition-colors duration-200 ${
+      className={`w-full lg:w-80 shrink-0 rounded-lg border bg-card flex flex-col max-h-full transition-colors duration-200 ${
         isOver ? "border-ring" : "border-border/60"
       } ${isDragging ? "opacity-40" : ""}`}
     >
