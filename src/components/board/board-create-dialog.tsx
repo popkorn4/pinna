@@ -72,7 +72,7 @@ export function BoardCreateDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm">
+        <Button size="default" className="shrink-0">
           <Plus className="size-4" /> Новая доска
         </Button>
       </DialogTrigger>

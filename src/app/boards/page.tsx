@@ -58,8 +58,8 @@ export default async function BoardsPage() {
           </Link>
         ) : null}
 
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8 sm:mb-12">
-          <div>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8 sm:mb-12">
+          <div className="min-w-0">
             <p className="text-xs uppercase tracking-[0.2em] text-brand mb-2 flex items-center gap-2">
               <span className="inline-block h-px w-6 bg-brand" /> Доски
             </p>
@@ -67,7 +67,9 @@ export default async function BoardsPage() {
               Мои доски
             </h1>
           </div>
-          <BoardCreateDialog />
+          <div className="shrink-0">
+            <BoardCreateDialog />
+          </div>
         </div>
 
         {boards.length === 0 ? (
