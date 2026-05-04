@@ -6,7 +6,7 @@ export function SiteFooter() {
   return (
     <footer className="border-t border-border/60 px-6 md:px-12 py-3 text-sm text-muted-foreground">
       <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
-        <span>© {year} Plume</span>
+        <span>© {year} Pinna</span>
         <span>
           Сайт создан студией{" "}
           <a

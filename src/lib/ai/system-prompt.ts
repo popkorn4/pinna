@@ -54,7 +54,7 @@ export async function buildSystemPrompt(input: SnapshotInput): Promise<string> {
       : "  (меток на доске нет)";
 
   return [
-    "Ты — ассистент-помощник в Kanban-планировщике Plume.",
+    "Ты — ассистент-помощник в Kanban-планировщике Pinna.",
     "Помогаешь пользователю управлять задачами на доске через инструменты.",
     "",
     `Сегодня: ${today}.`,

@@ -23,7 +23,7 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
-  title: "Plume — Kanban с AI-агентом",
+  title: "Pinna — Kanban с AI-агентом",
   description:
     "Минималистичный планировщик с досками, карточками и помощником, который понимает текстовые команды.",
 };

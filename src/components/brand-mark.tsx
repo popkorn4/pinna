@@ -9,7 +9,7 @@ type Props = {
 };
 
 /**
- * Брендовая метка — типографское «Plume» с охровой точкой-акцентом.
+ * Брендовая метка — типографское «Pinna» с охровой точкой-акцентом.
  * Без иконки в шапке (по запросу пользователя). Иконка пера остаётся
  * только в favicon (`src/app/icon.svg`).
  */
@@ -25,14 +25,14 @@ export function BrandMark({ href = "/", size = "md", className }: Props) {
         className,
       )}
     >
-      Plume
+      Pinna
       <span className="size-1.5 rounded-full bg-brand" aria-hidden />
     </span>
   );
 
   if (!href) return inner;
   return (
-    <Link href={href} aria-label="Plume" className="inline-flex">
+    <Link href={href} aria-label="Pinna" className="inline-flex">
       {inner}
     </Link>
   );
