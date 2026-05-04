@@ -147,6 +147,10 @@
   }
   html {
     @apply font-sans;
+    /* почему 17px вместо дефолтных 16px: визуально интерфейс становится
+       заметно крупнее без правки сотен мест с text-xs/text-sm — все размеры
+       в Tailwind в rem, поэтому масштабируются пропорционально */
+    font-size: 17px;
   }
   .font-display {
     font-family: var(--font-display);

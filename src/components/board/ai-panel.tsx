@@ -317,7 +317,7 @@ export function AiPanel({ boardId }: Props) {
                     key={s}
                     type="button"
                     onClick={() => setInput(s)}
-                    className="text-xs px-2 py-1 rounded-full bg-muted hover:bg-muted/70 text-foreground"
+                    className="text-sm px-3 py-1.5 rounded-full bg-muted hover:bg-muted/70 text-foreground"
                   >
                     {s}
                   </button>

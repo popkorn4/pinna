@@ -101,7 +101,7 @@ export default async function BoardsPage() {
                       </p>
                     ) : null}
                   </div>
-                  <div className="col-span-3 md:col-span-2 text-xs text-muted-foreground font-mono space-y-1 hidden sm:block">
+                  <div className="col-span-3 md:col-span-2 text-sm text-muted-foreground font-mono space-y-1 hidden sm:block">
                     <div>{b.columnsCount} колонок</div>
                     <div>{b.cardsCount} карточек</div>
                     <div>
