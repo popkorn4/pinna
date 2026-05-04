@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { SiteFooter } from "@/components/site-footer";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
 import { boardAccent } from "@/lib/colors";
@@ -130,6 +131,7 @@ export default async function InvitePage({ params }: Props) {
           ) : null}
         </div>
       </main>
+      <SiteFooter />
     </div>
   );
 }

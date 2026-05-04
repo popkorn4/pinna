@@ -4,6 +4,7 @@ import { ru } from "date-fns/locale";
 
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UserMenu } from "@/components/user-menu";
+import { SiteFooter } from "@/components/site-footer";
 import { AvatarUploader } from "@/components/account/avatar-uploader";
 import { InviteRow } from "@/components/account/invite-row";
 import { requireUser } from "@/lib/auth";
@@ -96,6 +97,7 @@ export default async function AccountPage() {
           )}
         </section>
       </main>
+      <SiteFooter />
     </div>
   );
 }

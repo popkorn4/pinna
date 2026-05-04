@@ -5,6 +5,7 @@ import { ru } from "date-fns/locale";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UserMenu } from "@/components/user-menu";
 import { GlobalSearchTrigger } from "@/components/global-search";
+import { SiteFooter } from "@/components/site-footer";
 import { BoardCreateDialog } from "@/components/board/board-create-dialog";
 import { BoardCardActions } from "@/components/board/board-card-actions";
 import { requireUser } from "@/lib/auth";
@@ -122,6 +123,7 @@ export default async function BoardsPage() {
           </ul>
         )}
       </main>
+      <SiteFooter />
     </div>
   );
 }

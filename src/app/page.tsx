@@ -4,6 +4,7 @@ import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UserMenu } from "@/components/user-menu";
+import { SiteFooter } from "@/components/site-footer";
 import { getCurrentUser } from "@/lib/auth";
 
 export default async function HomePage() {
@@ -114,10 +115,7 @@ export default async function HomePage() {
         </section>
       </main>
 
-      <footer className="px-6 md:px-12 py-8 border-t border-border/60 text-xs text-muted-foreground flex justify-between">
-        <span>© {new Date().getFullYear()} Plume</span>
-        <span className="font-mono">localhost</span>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

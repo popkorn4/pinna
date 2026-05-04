@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { ThemeToggle } from "@/components/theme-toggle";
+import { SiteFooter } from "@/components/site-footer";
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -18,9 +19,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       <main className="flex-1 grid place-items-center px-6 py-10">
         <div className="w-full max-w-md">{children}</div>
       </main>
-      <footer className="px-6 md:px-12 py-6 text-xs text-muted-foreground text-center">
-        © {new Date().getFullYear()} Доска
-      </footer>
+      <SiteFooter />
     </div>
   );
 }
