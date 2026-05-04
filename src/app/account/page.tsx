@@ -59,8 +59,8 @@ export default async function AccountPage() {
           </div>
         </section>
 
-        <section>
-          <h2 className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-4 flex items-center gap-2">
+        <section className="text-center sm:text-left">
+          <h2 className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-4 flex items-center justify-center sm:justify-start gap-2">
             <span className="inline-block h-px w-6 bg-muted-foreground" />
             Приглашения
             <span className="font-mono text-foreground">{invites.length}</span>
