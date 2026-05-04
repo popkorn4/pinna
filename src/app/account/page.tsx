@@ -36,8 +36,8 @@ export default async function AccountPage() {
       </header>
 
       <main className="flex-1 px-4 md:px-12 py-8 md:py-16 max-w-3xl mx-auto w-full space-y-10 md:space-y-12">
-        <section>
-          <p className="text-xs uppercase tracking-[0.2em] text-brand mb-2 flex items-center gap-2">
+        <section className="text-center sm:text-left">
+          <p className="text-xs uppercase tracking-[0.2em] text-brand mb-2 flex items-center justify-center sm:justify-start gap-2">
             <span className="inline-block h-px w-6 bg-brand" /> Аккаунт
           </p>
           <h1 className="font-display text-3xl sm:text-4xl md:text-5xl tracking-tight break-words">
@@ -54,7 +54,7 @@ export default async function AccountPage() {
               Мои доски
             </Link>
           </p>
-          <div className="mt-8">
+          <div className="mt-8 flex justify-center sm:justify-start">
             <AvatarUploader user={user} />
           </div>
         </section>
