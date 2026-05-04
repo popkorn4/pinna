@@ -125,7 +125,14 @@ export async function* runAgent(input: RunInput): AsyncGenerator<AgentStreamEven
     }
   }
 
-  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  const client = new Anthropic({
+    apiKey: process.env.ANTHROPIC_API_KEY,
+    // Если задан ANTHROPIC_BASE_URL — направляем запросы к прокси (например
+    // Cloudflare Worker), чтобы обойти геоблок Anthropic. Только AI-запросы.
+    ...(process.env.ANTHROPIC_BASE_URL
+      ? { baseURL: process.env.ANTHROPIC_BASE_URL }
+      : {}),
+  });
   const tools = getToolDefinitions();
   const ctx: AiToolContext = { userId: input.userId, boardId: input.boardId };
 
