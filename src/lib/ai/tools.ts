@@ -538,6 +538,62 @@ const add_checklist: AiTool = {
 // Destructive tools — создают PendingAiAction вместо немедленного действия
 // =====================================================================
 
+const create_column: AiTool = {
+  definition: {
+    name: "create_column",
+    description: "Создать новую колонку на доске. Добавляется в конец.",
+    input_schema: {
+      type: "object",
+      properties: {
+        title: { type: "string", description: "Название колонки" },
+      },
+      required: ["title"],
+    },
+  },
+  handler: async (input, ctx) => {
+    await ensureMutate(ctx);
+    const last = await prisma.column.findFirst({
+      where: { boardId: ctx.boardId },
+      orderBy: { position: "desc" },
+      select: { position: true },
+    });
+    const position = (last?.position ?? 0) + POSITION_STEP;
+    const col = await prisma.column.create({
+      data: { boardId: ctx.boardId, title: input.title as string, position },
+      select: { id: true, title: true },
+    });
+    return ok({ id: col.id, title: col.title });
+  },
+};
+
+const update_column: AiTool = {
+  definition: {
+    name: "update_column",
+    description: "Переименовать колонку.",
+    input_schema: {
+      type: "object",
+      properties: {
+        column_id: { type: "string" },
+        title: { type: "string" },
+      },
+      required: ["column_id", "title"],
+    },
+  },
+  handler: async (input, ctx) => {
+    await ensureMutate(ctx);
+    const col = await prisma.column.findUnique({
+      where: { id: input.column_id as string },
+      select: { boardId: true },
+    });
+    if (!col || col.boardId !== ctx.boardId) return err("Колонка не найдена");
+    await prisma.column.update({
+      where: { id: input.column_id as string },
+      data: { title: input.title as string },
+    });
+    return ok({ id: input.column_id, title: input.title });
+  },
+};
+
 const delete_card: AiTool = {
   destructive: true,
   definition: {
@@ -642,6 +698,8 @@ export const AI_TOOLS: AiTool[] = [
   add_label_to_card,
   create_label,
   add_checklist,
+  create_column,
+  update_column,
   delete_card,
   delete_column,
 ];
