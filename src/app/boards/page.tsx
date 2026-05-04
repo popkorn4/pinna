@@ -24,7 +24,7 @@ export default async function BoardsPage() {
 
   return (
     <div className="min-h-dvh flex flex-col">
-      <header className="flex items-center justify-between px-6 md:px-12 py-6 border-b border-border/60">
+      <header className="flex items-center justify-between gap-3 px-4 md:px-12 py-4 md:py-6 border-b border-border/60">
         <BrandMark />
         <div className="flex items-center gap-2">
           <GlobalSearchTrigger />
@@ -33,7 +33,7 @@ export default async function BoardsPage() {
         </div>
       </header>
 
-      <main className="flex-1 px-6 md:px-12 py-12 md:py-16 max-w-5xl mx-auto w-full">
+      <main className="flex-1 px-4 md:px-12 py-8 md:py-16 max-w-5xl mx-auto w-full">
         {invites.length > 0 ? (
           <Link
             href="/account"

@@ -71,7 +71,7 @@ export function BoardHeader({
           <UserMenu user={user} />
         </div>
       </div>
-      <div className="px-4 md:px-8 pb-4 flex items-end justify-between gap-4">
+      <div className="px-4 md:px-8 pb-4 flex flex-col lg:flex-row lg:items-end lg:justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
           <div
             className="h-9 w-1.5 rounded-full shrink-0"
@@ -82,8 +82,8 @@ export function BoardHeader({
             initial={board.title}
             disabled={!canEdit}
             ariaLabel="Название доски"
-            className="font-display text-3xl tracking-tight"
-            inputClassName="font-display text-3xl tracking-tight"
+            className="font-display text-2xl md:text-3xl tracking-tight"
+            inputClassName="font-display text-2xl md:text-3xl tracking-tight"
             onSubmit={async (next) => {
               const r = await updateBoard(board.id, { title: next });
               if (r.ok) router.refresh();
@@ -91,31 +91,35 @@ export function BoardHeader({
             }}
           />
         </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <BoardViewSwitcher boardId={board.id} view={view} />
-          <MemberStack members={members} />
-          <BoardLabelsPopover
-            boardId={board.id}
-            labels={labels}
-            canMutate={canMutate}
-          />
-          <ActivityPanel
-            boardId={board.id}
-            members={members.map((m) => m.user)}
-          />
-          <ArchivePanel boardId={board.id} canEdit={canMutate} />
-          <Button asChild variant="outline" size="default">
-            <Link href={`/boards/${board.id}/analytics`}>
-              <BarChart3 className="size-4" /> Аналитика
-            </Link>
-          </Button>
-          <BoardExportButton boardId={board.id} boardTitle={board.title} />
-          <ShareDialog
-            boardId={board.id}
-            currentUserId={user.id}
-            myRole={myRole}
-          />
-          <AiPanel boardId={board.id} />
+        {/* почему -mx + overflow-x-auto: на мобильном горизонтальный скролл
+            кнопок выглядит лучше чем перенос на 2-3 строки */}
+        <div className="-mx-4 md:-mx-0 overflow-x-auto pb-1">
+          <div className="px-4 md:px-0 flex items-center gap-2 w-max lg:w-auto">
+            <BoardViewSwitcher boardId={board.id} view={view} />
+            <MemberStack members={members} />
+            <BoardLabelsPopover
+              boardId={board.id}
+              labels={labels}
+              canMutate={canMutate}
+            />
+            <ActivityPanel
+              boardId={board.id}
+              members={members.map((m) => m.user)}
+            />
+            <ArchivePanel boardId={board.id} canEdit={canMutate} />
+            <Button asChild variant="outline" size="default">
+              <Link href={`/boards/${board.id}/analytics`}>
+                <BarChart3 className="size-4" /> Аналитика
+              </Link>
+            </Button>
+            <BoardExportButton boardId={board.id} boardTitle={board.title} />
+            <ShareDialog
+              boardId={board.id}
+              currentUserId={user.id}
+              myRole={myRole}
+            />
+            <AiPanel boardId={board.id} />
+          </div>
         </div>
       </div>
     </header>

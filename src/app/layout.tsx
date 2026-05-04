@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Fraunces } from "next/font/google";
 import "./globals.css";
 
@@ -26,6 +26,16 @@ export const metadata: Metadata = {
   title: "Plume — Kanban с AI-агентом",
   description:
     "Минималистичный планировщик с досками, карточками и помощником, который понимает текстовые команды.",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  // Для адресной строки браузера на мобильном — подбираем под кремовый фон
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f3eddc" },
+    { media: "(prefers-color-scheme: dark)", color: "#0c0c0c" },
+  ],
 };
 
 export default function RootLayout({

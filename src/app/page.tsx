@@ -13,7 +13,7 @@ export default async function HomePage() {
 
   return (
     <div className="min-h-dvh flex flex-col">
-      <header className="flex items-center justify-between px-6 md:px-12 py-6 border-b border-border/60">
+      <header className="flex items-center justify-between gap-3 px-4 md:px-12 py-4 md:py-6 border-b border-border/60">
         <BrandMark />
         <div className="flex items-center gap-2">
           <ThemeToggle />
@@ -60,7 +60,7 @@ export default async function HomePage() {
               Доски, колонки, карточки. И агент, который понимает обычные
               слова: «перенеси все срочные в работу», «разбей задачу на пункты».
             </p>
-            <div className="mt-10 flex items-center gap-4">
+            <div className="mt-10 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
               {user ? (
                 <Button asChild size="lg">
                   <Link href="/boards">
