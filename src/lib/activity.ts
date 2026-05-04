@@ -12,6 +12,7 @@ export type ActivityType =
   | "CARD_DUE_SET"
   | "CARD_DUE_REMOVED"
   | "CARD_ARCHIVED"
+  | "CARD_RESTORED"
   | "CARD_DELETED"
   | "CHECKLIST_ITEM_TOGGLED"
   | "COMMENT_CREATED"

@@ -343,9 +343,20 @@ export async function unarchiveCard(
     const role = await assertBoardAccess(user.id, boardId);
     if (!canMutateContent(role)) throw new ForbiddenError();
 
+    const before = await prisma.card.findUnique({
+      where: { id: cardId },
+      select: { title: true },
+    });
     await prisma.card.update({
       where: { id: cardId },
       data: { archivedAt: null },
+    });
+    await logActivity({
+      boardId,
+      userId: user.id,
+      cardId,
+      type: "CARD_RESTORED",
+      payload: { title: before?.title },
     });
     await revalidateAndNotifyBoard(boardId);
     return actionOk(undefined);

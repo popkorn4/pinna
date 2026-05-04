@@ -57,9 +57,10 @@ export function AnalyticsView({ analytics }: Props) {
           </h2>
         </div>
         <p className="text-sm text-muted-foreground mb-4 max-w-2xl">
-          Сколько карточек появилось и сколько ушло в архив за каждую из
-          последних 8 недель. Если «Создано» растёт, а «В архив» — нет, значит
-          задачи накапливаются. Если наоборот — команда разбирает завалы.
+          Сколько карточек появилось, ушло в архив и вернулось обратно за
+          каждую из последних 8 недель. Если «Появилось» растёт, а «Ушло
+          в архив» — нет, значит задачи накапливаются. Много «Вернулось» —
+          сигнал что карточки архивируют преждевременно.
         </p>
         <div className="rounded-lg border border-border/60 p-4 bg-card">
           <div className="text-xs text-muted-foreground mb-3 flex items-center gap-4 flex-wrap">
@@ -76,6 +77,13 @@ export function AnalyticsView({ analytics }: Props) {
                 style={{ background: "hsl(140 50% 45%)" }}
               />
               Ушло в архив
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <span
+                className="size-3 rounded-sm"
+                style={{ background: "hsl(35 80% 55%)" }}
+              />
+              Вернулось из архива
             </span>
           </div>
           <div className="flex">
@@ -147,6 +155,12 @@ export function AnalyticsView({ analytics }: Props) {
                 dataKey="archived"
                 name="Ушло в архив"
                 fill="hsl(140 50% 45%)"
+                radius={[3, 3, 0, 0]}
+              />
+              <Bar
+                dataKey="restored"
+                name="Вернулось из архива"
+                fill="hsl(35 80% 55%)"
                 radius={[3, 3, 0, 0]}
               />
             </BarChart>

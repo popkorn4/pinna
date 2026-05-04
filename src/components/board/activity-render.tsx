@@ -57,6 +57,12 @@ export function renderActivity(row: Row): React.ReactNode {
           отправил(а) <em>«{title}»</em> в архив
         </>
       );
+    case "CARD_RESTORED":
+      return (
+        <>
+          вернул(а) <em>«{title}»</em> из архива
+        </>
+      );
     case "CARD_DELETED":
       return (
         <>
