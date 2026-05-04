@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { BrandMark } from "@/components/brand-mark";
 import { SiteFooter } from "@/components/site-footer";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/db/prisma";
@@ -51,13 +52,7 @@ export default async function InvitePage({ params }: Props) {
   return (
     <div className="min-h-dvh flex flex-col">
       <header className="flex items-center justify-between px-6 md:px-12 py-6">
-        <Link
-          href="/"
-          className="font-display text-2xl tracking-tight inline-flex items-baseline gap-1"
-        >
-          Plume
-          <span className="size-1.5 rounded-full bg-brand" aria-hidden />
-        </Link>
+        <BrandMark />
         <ThemeToggle />
       </header>
       <main className="flex-1 grid place-items-center px-6 py-10">

@@ -4,6 +4,7 @@ import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UserMenu } from "@/components/user-menu";
+import { BrandMark } from "@/components/brand-mark";
 import { SiteFooter } from "@/components/site-footer";
 import { getCurrentUser } from "@/lib/auth";
 
@@ -13,17 +14,7 @@ export default async function HomePage() {
   return (
     <div className="min-h-dvh flex flex-col">
       <header className="flex items-center justify-between px-6 md:px-12 py-6 border-b border-border/60">
-        <Link
-          href="/"
-          className="font-display text-2xl tracking-tight inline-flex items-baseline gap-1"
-          aria-label="Plume"
-        >
-          Plume
-          <span
-            className="size-1.5 rounded-full bg-brand"
-            aria-hidden
-          />
-        </Link>
+        <BrandMark />
         <div className="flex items-center gap-2">
           <ThemeToggle />
           {user ? (

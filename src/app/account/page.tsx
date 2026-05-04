@@ -4,6 +4,7 @@ import { ru } from "date-fns/locale";
 
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UserMenu } from "@/components/user-menu";
+import { BrandMark } from "@/components/brand-mark";
 import { SiteFooter } from "@/components/site-footer";
 import { AvatarUploader } from "@/components/account/avatar-uploader";
 import { InviteRow } from "@/components/account/invite-row";
@@ -27,13 +28,7 @@ export default async function AccountPage() {
   return (
     <div className="min-h-dvh flex flex-col">
       <header className="flex items-center justify-between px-6 md:px-12 py-6 border-b border-border/60">
-        <Link
-          href="/"
-          className="font-display text-2xl tracking-tight inline-flex items-baseline gap-1"
-        >
-          Plume
-          <span className="size-1.5 rounded-full bg-brand" aria-hidden />
-        </Link>
+        <BrandMark />
         <div className="flex items-center gap-2">
           <ThemeToggle />
           <UserMenu user={user} />
