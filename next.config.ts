@@ -29,6 +29,10 @@ const nextConfig: NextConfig = {
   },
   // Производительность: компилируем без source maps в проде, чтобы bundle меньше
   productionBrowserSourceMaps: false,
+  // pdfkit и exceljs читают свои внутренние ассеты через fs/require и ломаются
+  // при бандлинге webpack'ом. Помечаем как external — Node.js будет резолвить
+  // их во время выполнения, а не пытаться засунуть в server bundle.
+  serverExternalPackages: ["pdfkit", "exceljs"],
 };
 
 export default nextConfig;

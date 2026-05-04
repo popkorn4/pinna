@@ -31,6 +31,10 @@ export async function generateBoardPdf(
     const doc = new PDFDocument({
       size: "A4",
       margins: { top: 56, bottom: 56, left: 56, right: 56 },
+      // Передаём наш шрифт сразу в конструкторе. Без этого pdfkit пытается
+      // загрузить встроенный Helvetica.afm, путь к которому ломается webpack'ом
+      // в Next.js (получается /ROOT/node_modules/... — буквально).
+      font: FONT_REGULAR,
       info: {
         Title: board.title,
         Producer: "Pinna",
