@@ -62,7 +62,7 @@ export function AnalyticsView({ analytics }: Props) {
           задачи накапливаются. Если наоборот — команда разбирает завалы.
         </p>
         <div className="rounded-lg border border-border/60 p-4 bg-card">
-          <div className="text-xs text-muted-foreground mb-2 flex items-center gap-4 flex-wrap">
+          <div className="text-xs text-muted-foreground mb-3 flex items-center gap-4 flex-wrap">
             <span className="inline-flex items-center gap-1.5">
               <span
                 className="size-3 rounded-sm"
@@ -78,10 +78,24 @@ export function AnalyticsView({ analytics }: Props) {
               Ушло в архив
             </span>
           </div>
-          <ResponsiveContainer width="100%" height={320}>
+          <div className="flex">
+            {/* Вертикальная подпись Y-оси */}
+            <div className="flex items-center pr-2">
+              <span
+                className="text-[11px] text-muted-foreground tracking-wider uppercase"
+                style={{
+                  writingMode: "vertical-rl",
+                  transform: "rotate(180deg)",
+                }}
+              >
+                Кол-во карточек
+              </span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <ResponsiveContainer width="100%" height={340}>
             <BarChart
               data={analytics.throughput}
-              margin={{ top: 10, right: 16, left: 8, bottom: 36 }}
+              margin={{ top: 10, right: 16, left: 8, bottom: 8 }}
             >
               <CartesianGrid
                 strokeDasharray="3 3"
@@ -93,35 +107,18 @@ export function AnalyticsView({ analytics }: Props) {
                 tick={{ fill: "currentColor", fontSize: 13 }}
                 stroke="currentColor"
                 opacity={0.7}
-                label={{
-                  value: "Начало недели",
-                  position: "insideBottom",
-                  offset: -22,
-                  style: {
-                    fill: "currentColor",
-                    fontSize: 12,
-                    opacity: 0.7,
-                  },
-                }}
+                tickMargin={8}
               />
               <YAxis
                 tick={{ fill: "currentColor", fontSize: 13 }}
                 stroke="currentColor"
                 opacity={0.7}
                 allowDecimals={false}
-                label={{
-                  value: "Кол-во карточек",
-                  angle: -90,
-                  position: "insideLeft",
-                  offset: 14,
-                  style: {
-                    fill: "currentColor",
-                    fontSize: 12,
-                    opacity: 0.7,
-                    textAnchor: "middle",
-                  },
-                }}
+                tickMargin={6}
+                width={36}
               />
+              {/* Подписи осей выводим текстом ВНЕ графика, чтобы не накладывались
+                  на деления — Recharts label с insideLeft/insideBottom налегает на тики */}
               <Tooltip
                 cursor={{ fill: "currentColor", opacity: 0.06 }}
                 contentStyle={{
@@ -154,6 +151,11 @@ export function AnalyticsView({ analytics }: Props) {
               />
             </BarChart>
           </ResponsiveContainer>
+              <div className="text-center text-[11px] text-muted-foreground tracking-wider uppercase mt-1">
+                Начало недели
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
