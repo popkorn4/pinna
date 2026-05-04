@@ -27,7 +27,7 @@ export default async function AccountPage() {
 
   return (
     <div className="min-h-dvh flex flex-col">
-      <header className="flex items-center justify-between px-6 md:px-12 py-6 border-b border-border/60">
+      <header className="flex items-center justify-between gap-3 px-4 md:px-12 py-4 md:py-6 border-b border-border/60">
         <BrandMark />
         <div className="flex items-center gap-2">
           <ThemeToggle />
@@ -35,15 +35,15 @@ export default async function AccountPage() {
         </div>
       </header>
 
-      <main className="flex-1 px-6 md:px-12 py-12 md:py-16 max-w-3xl mx-auto w-full space-y-12">
+      <main className="flex-1 px-4 md:px-12 py-8 md:py-16 max-w-3xl mx-auto w-full space-y-10 md:space-y-12">
         <section>
           <p className="text-xs uppercase tracking-[0.2em] text-brand mb-2 flex items-center gap-2">
             <span className="inline-block h-px w-6 bg-brand" /> Аккаунт
           </p>
-          <h1 className="font-display text-4xl md:text-5xl tracking-tight">
+          <h1 className="font-display text-3xl sm:text-4xl md:text-5xl tracking-tight break-words">
             {user.name || "Без имени"}
           </h1>
-          <p className="mt-2 text-sm text-muted-foreground font-mono">
+          <p className="mt-2 text-sm text-muted-foreground font-mono break-all">
             {user.email}
           </p>
           <p className="mt-1 text-sm text-muted-foreground">

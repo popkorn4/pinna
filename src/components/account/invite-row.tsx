@@ -53,29 +53,26 @@ export function InviteRow({ invite }: Props) {
   }
 
   return (
-    <div className="grid grid-cols-12 gap-4 items-center py-5">
-      <div className="col-span-1 flex justify-center">
+    <div className="flex flex-col sm:flex-row sm:items-center gap-3 py-4 sm:py-5">
+      <div className="flex items-start gap-3 flex-1 min-w-0">
         <div
-          className="h-10 w-1 rounded-full"
+          className="h-10 w-1 rounded-full shrink-0"
           style={{ background: boardAccent(invite.board.id) }}
           aria-hidden
         />
-      </div>
-      <div className="col-span-7 min-w-0">
-        <h3 className="font-display text-lg tracking-tight truncate">
-          {invite.board.title}
-        </h3>
-        <div className="text-xs text-muted-foreground mt-1 flex items-center gap-2">
-          <Avatar className="size-4">
-            {invite.invitedBy.image ? (
-              <AvatarImage src={invite.invitedBy.image} alt="" />
-            ) : null}
-            <AvatarFallback className="text-[8px]">{initials}</AvatarFallback>
-          </Avatar>
-          <span>{inviter}</span>
-          <span>·</span>
-          <span>
-            как{" "}
+        <div className="flex-1 min-w-0">
+          <h3 className="font-display text-lg tracking-tight truncate">
+            {invite.board.title}
+          </h3>
+          <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1.5 flex-wrap">
+            <Avatar className="size-4">
+              {invite.invitedBy.image ? (
+                <AvatarImage src={invite.invitedBy.image} alt="" />
+              ) : null}
+              <AvatarFallback className="text-[8px]">{initials}</AvatarFallback>
+            </Avatar>
+            <span className="truncate max-w-[120px]">{inviter}</span>
+            <span aria-hidden>·</span>
             <span className="font-mono">
               {invite.role === "MEMBER"
                 ? "участник"
@@ -83,12 +80,14 @@ export function InviteRow({ invite }: Props) {
                   ? "исполнитель"
                   : "наблюдатель"}
             </span>
-          </span>
-          <span>·</span>
-          <span>до {invite.expiresLabel}</span>
+            <span aria-hidden>·</span>
+            <span className="whitespace-nowrap">
+              до {invite.expiresLabel}
+            </span>
+          </div>
         </div>
       </div>
-      <div className="col-span-4 flex gap-2 justify-end">
+      <div className="flex gap-2 sm:justify-end shrink-0 pl-4 sm:pl-0">
         <Button size="sm" onClick={accept} disabled={pending}>
           Принять
         </Button>

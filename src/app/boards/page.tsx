@@ -58,12 +58,12 @@ export default async function BoardsPage() {
           </Link>
         ) : null}
 
-        <div className="flex items-end justify-between gap-4 mb-12">
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8 sm:mb-12">
           <div>
             <p className="text-xs uppercase tracking-[0.2em] text-brand mb-2 flex items-center gap-2">
               <span className="inline-block h-px w-6 bg-brand" /> Доски
             </p>
-            <h1 className="font-display text-4xl md:text-5xl tracking-tight">
+            <h1 className="font-display text-3xl sm:text-4xl md:text-5xl tracking-tight">
               Мои доски
             </h1>
           </div>
@@ -78,35 +78,39 @@ export default async function BoardsPage() {
               <li key={b.id}>
                 <Link
                   href={`/boards/${b.id}`}
-                  className="group grid grid-cols-12 gap-4 items-center py-6 hover:bg-muted/40 -mx-2 px-2 transition-colors"
+                  className="group flex items-center gap-3 sm:gap-4 py-4 sm:py-6 hover:bg-muted/40 -mx-2 px-2 transition-colors"
                 >
-                  <div className="col-span-1 flex justify-center">
+                  <div className="shrink-0">
                     <div
-                      className="h-12 w-1 rounded-full"
+                      className="h-10 sm:h-12 w-1 rounded-full"
                       style={{ background: boardAccent(b.id) }}
                       aria-hidden
                     />
                   </div>
-                  <div className="col-span-7 md:col-span-8 min-w-0">
-                    <h2 className="font-display text-2xl tracking-tight truncate">
+                  <div className="flex-1 min-w-0">
+                    <h2 className="font-display text-xl sm:text-2xl tracking-tight truncate">
                       {b.title}
                     </h2>
                     {b.description ? (
-                      <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
+                      <p className="text-sm text-muted-foreground line-clamp-2 mt-0.5">
                         {b.description}
                       </p>
                     ) : null}
+                    {/* Мета на мобильном — компактной строкой под заголовком */}
+                    <p className="text-xs text-muted-foreground font-mono mt-1 sm:hidden">
+                      {b.columnsCount} колонок · {b.cardsCount} карточек ·{" "}
+                      {format(b.updatedAt, "d MMM", { locale: ru })}
+                    </p>
                   </div>
-                  <div className="col-span-3 md:col-span-2 text-sm text-muted-foreground font-mono space-y-1 hidden sm:block">
+                  <div className="hidden sm:block shrink-0 w-32 text-sm text-muted-foreground font-mono space-y-1">
                     <div>{b.columnsCount} колонок</div>
                     <div>{b.cardsCount} карточек</div>
                     <div>
-                      {/* почему абсолютная дата: relative time даёт hydration mismatch
-                          (разное "сейчас" на сервере и клиенте) */}
+                      {/* почему абсолютная дата: relative time даёт hydration mismatch */}
                       {format(b.updatedAt, "d MMM yyyy", { locale: ru })}
                     </div>
                   </div>
-                  <div className="col-span-1 flex justify-end">
+                  <div className="shrink-0">
                     <BoardCardActions
                       boardId={b.id}
                       canManage={b.role === "OWNER"}
