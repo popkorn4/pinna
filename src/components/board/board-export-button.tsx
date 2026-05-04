@@ -1,6 +1,6 @@
 "use client";
 
-import { Download, FileJson, FileText } from "lucide-react";
+import { Download, FileJson, FileText, FileSpreadsheet, FileType } from "lucide-react";
 import { useTransition } from "react";
 import { toast } from "sonner";
 
@@ -21,8 +21,9 @@ type Props = {
   boardTitle: string;
 };
 
-function downloadBlob(content: string, filename: string, mime: string) {
-  const blob = new Blob([content], { type: mime });
+function downloadBlob(content: string | Blob, filename: string, mime: string) {
+  const blob =
+    content instanceof Blob ? content : new Blob([content], { type: mime });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
@@ -65,6 +66,26 @@ export function BoardExportButton({ boardId, boardTitle }: Props) {
     });
   }
 
+  // PDF и XLSX — бинарь, идут через API route (не помещаются в server action).
+  function exportBinary(kind: "pdf" | "xlsx") {
+    startTransition(async () => {
+      try {
+        const res = await fetch(`/api/boards/${boardId}/export/${kind}`);
+        if (!res.ok) throw new Error(`Не сгенерировался (${res.status})`);
+        const blob = await res.blob();
+        const mime =
+          kind === "pdf"
+            ? "application/pdf"
+            : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+        downloadBlob(blob, `${base}.${kind}`, mime);
+      } catch (e) {
+        toast.error(
+          e instanceof Error ? e.message : `Не удалось экспортировать ${kind.toUpperCase()}`,
+        );
+      }
+    });
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -73,6 +94,12 @@ export function BoardExportButton({ boardId, boardTitle }: Props) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
+        <DropdownMenuItem onSelect={() => exportBinary("pdf")}>
+          <FileType className="size-4" /> PDF
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => exportBinary("xlsx")}>
+          <FileSpreadsheet className="size-4" /> Excel (XLSX)
+        </DropdownMenuItem>
         <DropdownMenuItem onSelect={() => exportAs("md")}>
           <FileText className="size-4" /> Markdown
         </DropdownMenuItem>

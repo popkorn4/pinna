@@ -5,41 +5,9 @@ import { ru } from "date-fns/locale";
 
 import { requireUser } from "@/lib/auth";
 import { assertBoardAccess } from "@/lib/auth/permissions";
-import { prisma } from "@/lib/db/prisma";
+import { fetchBoardForExport } from "@/lib/export/data";
 
-async function fetchBoardWithEverything(boardId: string) {
-  return prisma.board.findUnique({
-    where: { id: boardId },
-    include: {
-      labels: { orderBy: { position: "asc" } },
-      columns: {
-        orderBy: { position: "asc" },
-        include: {
-          cards: {
-            where: { archivedAt: null },
-            orderBy: { position: "asc" },
-            include: {
-              labels: { include: { label: true } },
-              checklists: {
-                orderBy: { position: "asc" },
-                include: {
-                  items: { orderBy: { position: "asc" } },
-                },
-              },
-              comments: {
-                orderBy: { createdAt: "asc" },
-                include: {
-                  author: { select: { name: true, email: true } },
-                },
-              },
-              assignee: { select: { name: true, email: true } },
-            },
-          },
-        },
-      },
-    },
-  });
-}
+const fetchBoardWithEverything = fetchBoardForExport;
 
 /**
  * JSON-экспорт доски целиком. Используется для бэкапов и переноса.
@@ -140,3 +108,4 @@ export async function exportBoardMarkdown(boardId: string): Promise<string> {
 
   return out.join("\n");
 }
+
