@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { BoardHeader } from "@/components/board/board-header";
 import { CalendarView } from "@/components/board/calendar-view";
 import { CardModalLoader } from "@/components/board/card-modal-loader";
+import { SiteFooter } from "@/components/site-footer";
 import { requireUser } from "@/lib/auth";
 import {
   NotFoundError,
@@ -73,6 +74,7 @@ export default async function BoardCalendarPage({ params, searchParams }: Props)
           canEdit={canEdit}
         />
       </main>
+      <SiteFooter />
       <CardModalLoader
         openCardId={openCardId ?? null}
         columns={columns}

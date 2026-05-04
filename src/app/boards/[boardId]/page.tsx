@@ -4,6 +4,7 @@ import { BoardHeader } from "@/components/board/board-header";
 import { BoardDnd } from "@/components/board/board-dnd";
 import { BoardRealtime } from "@/components/board/board-realtime";
 import { CardModalLoader } from "@/components/board/card-modal-loader";
+import { SiteFooter } from "@/components/site-footer";
 import { requireUser } from "@/lib/auth";
 import {
   NotFoundError,
@@ -72,6 +73,8 @@ export default async function BoardPage({ params, searchParams }: Props) {
           canEdit={canEdit}
         />
       </main>
+
+      <SiteFooter />
 
       <CardModalLoader
         openCardId={openCardId ?? null}

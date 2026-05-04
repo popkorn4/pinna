@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UserMenu } from "@/components/user-menu";
 import { AnalyticsView } from "@/components/board/analytics-view";
+import { SiteFooter } from "@/components/site-footer";
 import { requireUser } from "@/lib/auth";
 import { NotFoundError } from "@/lib/auth/permissions";
 import { getBoard } from "@/server/board-actions";
@@ -53,6 +54,7 @@ export default async function AnalyticsPage({ params }: Props) {
         </div>
         <AnalyticsView analytics={analytics} />
       </main>
+      <SiteFooter />
     </div>
   );
 }
