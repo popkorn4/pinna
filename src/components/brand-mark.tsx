@@ -14,8 +14,9 @@ type Props = {
  * только в favicon (`src/app/icon.svg`).
  */
 export function BrandMark({ href = "/", size = "md", className }: Props) {
+  // bump на одну ступень выше: md теперь как был lg
   const text =
-    size === "sm" ? "text-xl" : size === "lg" ? "text-3xl" : "text-2xl";
+    size === "sm" ? "text-2xl" : size === "lg" ? "text-4xl" : "text-3xl";
 
   const inner = (
     <span
