@@ -144,14 +144,13 @@ export function BoardHeader({
                   Действия
                 </SheetTitle>
               </SheetHeader>
-              {/* почему оборачиваем триггеры в вертикальный flex с *:w-full:
-                  оригинальные компоненты-Sheets имеют свои triggerButton'ы;
-                  ставим их в строку — и каждый клик закрывает наше меню и
-                  открывает свой Sheet */}
-              <div
-                className="px-3 py-3 flex flex-col gap-2 [&>*>button]:w-full [&>button]:w-full [&_button[type=button]]:justify-start"
-                onClick={() => setMobileMenuOpen(false)}
-              >
+              {/* Каждая обёртка-кнопка получает one-line full-width стиль через
+                  селекторы. Меню НЕ закрывается автоматически: вложенные Sheet/
+                  Popover портируются в body, и закрытие нашего Sheet тут же
+                  закрывало бы их по клику-наружу. Пользователь закрывает Меню
+                  сам — кнопкой «Закрыть» или тапом в сторону, после того как
+                  выберет действие. */}
+              <div className="px-3 py-3 flex flex-col gap-2 [&_button]:!w-full [&_button]:!justify-start [&_a]:!w-full [&_a]:!justify-start">
                 <BoardLabelsPopover
                   boardId={board.id}
                   labels={labels}
@@ -177,6 +176,13 @@ export function BoardHeader({
                   myRole={myRole}
                 />
                 <AiPanel boardId={board.id} />
+                <Button
+                  variant="ghost"
+                  className="mt-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Закрыть
+                </Button>
               </div>
             </SheetContent>
           </Sheet>

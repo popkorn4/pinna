@@ -10,7 +10,8 @@ import {
   type DragStartEvent,
   type DragOverEvent,
   KeyboardSensor,
-  PointerSensor,
+  MouseSensor,
+  TouchSensor,
   closestCenter,
   pointerWithin,
   rectIntersection,
@@ -75,9 +76,14 @@ export function BoardDnd({ boardId, initialColumns, canEdit }: Props) {
   }, [initialColumns, dragInProgress, pending]);
 
   const sensors = useSensors(
-    // почему distance: 5px — клик и drag различаются, иначе любой клик
-    // на карточке начинает drag
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    // Мышь: distance 5px — отделяет клик от drag.
+    useSensor(MouseSensor, { activationConstraint: { distance: 5 } }),
+    // Тач: задержка 250мс — палец может скроллить страницу пока не "удержит"
+    // карточку. Иначе любая попытка прокрутить вертикально превращается в drag.
+    // tolerance 5 — палец может слегка дёрнуться за время удержания.
+    useSensor(TouchSensor, {
+      activationConstraint: { delay: 250, tolerance: 5 },
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     }),
