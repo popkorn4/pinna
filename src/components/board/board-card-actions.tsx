@@ -91,7 +91,10 @@ export function BoardCardActions({ boardId, canManage }: Props) {
 
       <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <AlertDialogTrigger className="sr-only" />
-        <AlertDialogContent>
+        {/* stopPropagation: BoardCardActions рендерится внутри <Link href="/boards/[id]">.
+            Radix Portal не блокирует React-bubbling, без этого клик «Удалить» уходит
+            наверх к Link → Next.js делает navigate на удалённую доску → 404. */}
+        <AlertDialogContent onClick={(e) => e.stopPropagation()}>
           <AlertDialogHeader>
             <AlertDialogTitle>Удалить доску?</AlertDialogTitle>
             <AlertDialogDescription>
@@ -102,7 +105,8 @@ export function BoardCardActions({ boardId, canManage }: Props) {
           <AlertDialogFooter>
             <AlertDialogCancel>Отмена</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() =>
+              onClick={(e) => {
+                e.stopPropagation();
                 startTransition(async () => {
                   const r = await deleteBoard(boardId);
                   if (!r.ok) toast.error(r.error);
@@ -111,8 +115,8 @@ export function BoardCardActions({ boardId, canManage }: Props) {
                     router.refresh();
                   }
                   setConfirmOpen(false);
-                })
-              }
+                });
+              }}
             >
               Удалить
             </AlertDialogAction>

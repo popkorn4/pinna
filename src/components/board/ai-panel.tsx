@@ -360,7 +360,10 @@ export function AiPanel({ boardId }: Props) {
             }
             rows={2}
             disabled={streaming || !conversationId || !hasKey}
-            className="resize-none"
+            // max-h-40 + overflow-y-auto: shadcn Textarea использует
+            // field-sizing-content и без max-height растёт бесконечно,
+            // выталкивая кнопку «Отправить» за пределы экрана при длинном тексте.
+            className="resize-none max-h-40 overflow-y-auto"
           />
           <div className="flex justify-between items-center">
             <span className="text-xs text-muted-foreground font-mono">

@@ -136,6 +136,15 @@ export function GlobalSearch() {
  * Triggert-кнопка для шапки. Можно вставлять отдельно.
  */
 export function GlobalSearchTrigger() {
+  // Дефолт "⌘" — большинство наших пользователей на маке + не даёт hydration
+  // mismatch при SSR (на клиенте после mount уточняем под Win/Linux).
+  const [modKey, setModKey] = useState("⌘");
+  useEffect(() => {
+    const ua = navigator.userAgent;
+    const isMac = /Mac|iPod|iPhone|iPad/.test(ua);
+    if (!isMac) setModKey("Ctrl+");
+  }, []);
+
   return (
     <button
       type="button"
@@ -145,12 +154,12 @@ export function GlobalSearchTrigger() {
           new KeyboardEvent("keydown", { key: "k", metaKey: true }),
         );
       }}
-      className="hidden md:inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground border border-border/60 rounded-md px-2 py-1"
+      className="hidden md:inline-flex items-center gap-2 w-72 lg:w-80 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/40 border border-border/60 rounded-md px-3 py-2 transition-colors"
     >
-      <Search className="size-3.5" />
-      <span>Поиск</span>
-      <kbd className="ml-2 font-mono text-[10px] bg-muted px-1 rounded">
-        ⌘K
+      <Search className="size-4 shrink-0" />
+      <span className="flex-1 text-left">Поиск по доскам и карточкам…</span>
+      <kbd className="font-mono text-[10px] bg-muted px-1.5 py-0.5 rounded">
+        {modKey}K
       </kbd>
     </button>
   );
