@@ -176,13 +176,6 @@ export function BoardHeader({
                   myRole={myRole}
                 />
                 <AiPanel boardId={board.id} />
-                <Button
-                  variant="ghost"
-                  className="mt-2"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Закрыть
-                </Button>
               </div>
             </SheetContent>
           </Sheet>
